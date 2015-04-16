@@ -1,20 +1,109 @@
 <?xml version="1.0"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Brume</title>
+    <title>Not my idea</title>
     <link>xun.im</link>
     <atom:link href="xun.im/feed.xml" rel="self" type="application/rss+xml" />
-    <description>It's simple. It's easy to use. It's a Jekyll theme.</description>
+    <description></description>
     <language>en-us</language>
-    <pubDate>Mon, 13 Apr 2015 21:33:12 +0800</pubDate>
-    <lastBuildDate>Mon, 13 Apr 2015 21:33:12 +0800</lastBuildDate>
+    <pubDate>Thu, 16 Apr 2015 11:31:35 +0800</pubDate>
+    <lastBuildDate>Thu, 16 Apr 2015 11:31:35 +0800</lastBuildDate>
 
+    
+      <item>
+        <title>AKKA的日志功能</title>
+        <link>xun.im/2015/04/15/akka-logging/</link>
+        <pubDate>Wed, 15 Apr 2015 00:00:00 +0800</pubDate>
+        <author>wuhx</author>
+        <description>&lt;p&gt;作为一个“搞kernel的”，对日志的理解不过是printk的EMERG,INFO,DEBUG等各种level，关键时刻还是得dump内存，上gcc单步跟踪。但在到处是异步并发，远程分布式通信的jdk世界，日志成了定位问题最重要甚至是唯一的手段。在akka上尤为如此。&lt;/p&gt;
+
+&lt;p&gt;akka日志的官方文档&lt;a href=&quot;http://doc.akka.io/docs/akka/current/scala/logging.html&quot;&gt;http://doc.akka.io/docs/akka/current/scala/logging.html&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;akka日志功能是基于slf4j构建的。对于不熟悉java的人，slf4j，log4j，logback等基本上是这样一个关系：SLF4J是一套log接口，java.util.logging, logback, log4j等是具体的实现，而logback已逐渐取代log4j成为事实标准。&lt;/p&gt;
+
+&lt;p&gt;所以要使用akka的日志，除了akka-slf4j还需增加logback依赖。&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-scala&quot; data-lang=&quot;scala&quot;&gt;libraryDependencies ++= Seq(
+  &amp;quot;com.typesafe.akka&amp;quot; %% &amp;quot;akka-actor&amp;quot; % akkaVersion,
+  &amp;quot;com.typesafe.akka&amp;quot; %% &amp;quot;akka-contrib&amp;quot; % akkaVersion,
+  &amp;quot;com.typesafe.akka&amp;quot; %% &amp;quot;akka-testkit&amp;quot; % akkaVersion,
+  &amp;quot;com.typesafe.akka&amp;quot; %% &amp;quot;akka-slf4j&amp;quot; % akkaVersion,
+  &amp;quot;org.scalatest&amp;quot; %% &amp;quot;scalatest&amp;quot; % &amp;quot;2.2.4&amp;quot; % &amp;quot;test&amp;quot;,
+  &amp;quot;ch.qos.logback&amp;quot; % &amp;quot;logback-classic&amp;quot; % &amp;quot;1.1.3&amp;quot;,
+  &amp;quot;commons-io&amp;quot; % &amp;quot;commons-io&amp;quot; % &amp;quot;2.4&amp;quot; % &amp;quot;test&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;h2&gt;actor中记录日志&lt;/h2&gt;
+
+&lt;p&gt;akka提供了ActorLogging这个trait，方便在actor中记录日志。&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-scala&quot; data-lang=&quot;scala&quot;&gt;class MasterActor extends Actor with akka.actor.ActorLogging{
+  def receive = {
+    case _ =&amp;gt;
+     log.debug(&amp;quot;debug log&amp;quot;)
+     log.info(&amp;quot;info log&amp;quot;)
+     log.warning(&amp;quot;warning log&amp;quot;)
+     log.error(&amp;quot;error log&amp;quot;)
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;但ActorLogging这个trait只能mix到Actor类上。&lt;/p&gt;
+
+&lt;p&gt;在其他非actor类上，如果能访问到actor系统，可利用它的event stream进行log。&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-scala&quot; data-lang=&quot;scala&quot;&gt;import akka.event.Logging
+val log = Logging(system.eventStream, &amp;quot;log prefix:&amp;quot;)
+log.debug(&amp;quot;debug log&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;否则也可以直接通过slf4j访问logback记录日志。&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-scala&quot; data-lang=&quot;scala&quot;&gt;import org.slf4j.LoggerFactory
+val log = LoggerFactory.getLogger(getClass)
+log.debug(&amp;quot;Hello Logger!&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;上面这3种log方式因为用的都是同一个logback实例，所以输出是统一的，区别是akka提供的log接口能够在记录时自动带上actor地址等信息，极大的方便定位问题。&lt;/p&gt;
+
+&lt;h2&gt;logback的配置&lt;/h2&gt;
+
+&lt;p&gt;上面说了半天好像和printk的level级别没有太大差别，java的log系统最强大的地方在于它的可配置性。&lt;/p&gt;
+
+&lt;p&gt;如下面这个logback配置，可把ERROR及以上级别的打印输出到akka.log文件，同时把DEBUG及以上级别的打印输出到控制台。还可以配置输出格式，自动在log内容上附带一些上下文信息，如&lt;code&gt;%X{akkaSource}&lt;/code&gt;这个变量会解析为发起log的具体actor地址，这在系统上百万actor并发时，将成为跟踪问题重要线索。如果输出到日志文件，还可控制文件体积的最大值，选择原有内容是追加还是覆盖。&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-xml&quot; data-lang=&quot;xml&quot;&gt;&amp;lt;configuration&amp;gt;
+        &amp;lt;appender name=&amp;quot;FILE&amp;quot; class=&amp;quot;ch.qos.logback.core.FileAppender&amp;quot;&amp;gt;
+        &amp;lt;file&amp;gt;akka.log&amp;lt;/file&amp;gt;
+        &amp;lt;filter class=&amp;quot;ch.qos.logback.classic.filter.ThresholdFilter&amp;quot;&amp;gt;
+            &amp;lt;level&amp;gt;ERROR&amp;lt;/level&amp;gt;
+        &amp;lt;/filter&amp;gt;
+        &amp;lt;append&amp;gt;false&amp;lt;/append&amp;gt;
+        &amp;lt;!-- encoders are assigned the type
+             ch.qos.logback.classic.encoder.PatternLayoutEncoder by default --&amp;gt;
+        &amp;lt;encoder&amp;gt;
+            &amp;lt;!--&amp;lt;pattern&amp;gt;%date{ISO8601} %-5level %logger{36} %X{sourceThread} - %msg%n&amp;lt;/pattern&amp;gt;--&amp;gt;
+            &amp;lt;pattern&amp;gt;%date{ISO8601} %-5level %logger{36} %X{akkaSource} - %msg%n&amp;lt;/pattern&amp;gt;
+        &amp;lt;/encoder&amp;gt;
+    &amp;lt;/appender&amp;gt;
+
+        &amp;lt;appender name=&amp;quot;STDOUT&amp;quot; class=&amp;quot;ch.qos.logback.core.ConsoleAppender&amp;quot;&amp;gt;
+        &amp;lt;encoder&amp;gt;
+            &amp;lt;pattern&amp;gt;%date{ISO8601} %-5level %logger{36} %X{akkaSource} - %msg%n&amp;lt;/pattern&amp;gt;
+            &amp;lt;!--&amp;lt;pattern&amp;gt;%X{akkaTimestamp} %-5level %logger{36} %X{akkaSource} - %msg%n&amp;lt;/pattern&amp;gt;--&amp;gt;
+        &amp;lt;/encoder&amp;gt;
+    &amp;lt;/appender&amp;gt;
+
+    &amp;lt;root level=&amp;quot;DEBUG&amp;quot;&amp;gt;
+        &amp;lt;appender-ref ref=&amp;quot;STDOUT&amp;quot; /&amp;gt;
+        &amp;lt;appender-ref ref=&amp;quot;FILE&amp;quot; /&amp;gt;
+    &amp;lt;/root&amp;gt;
+&amp;lt;/configuration&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;日志的每种输出方式对应一个appender，除了上面用到的ConsoleAppender和FileAppender，还有通过网络发送日志到远程日志服务器的Appender，用户也可自定义appender，如日志云服务提供商loggly就有自己的&lt;a href=&quot;https://github.com/qos-ch/logback-extensions/wiki/Loggly&quot;&gt;Appender&lt;/a&gt;。&lt;/p&gt;
+
+&lt;p&gt;更多语法参考：http://logback.qos.ch/manual/appenders.html&lt;/p&gt;
+
+&lt;p&gt;最后推荐一篇LinkedIn工程师关于日志的长文&lt;a href=&quot;https://engineering.linkedin.com/distributed-systems/log-what-every-software-engineer-should-know-about-real-time-datas-unifying&quot;&gt;The Log: What every software engineer should know about real-time data&amp;#39;s unifying abstraction&lt;/a&gt;，当然他说的日志已经超出了简单记录调试信息的范畴了。&lt;/p&gt;
+</description>
+      </item>
     
       <item>
         <title>墙内资源</title>
         <link>xun.im/2015/04/12/beyond-the-wall/</link>
         <pubDate>Sun, 12 Apr 2015 00:00:00 +0800</pubDate>
-        <author>Aigars Dzerviniks</author>
+        <author>wuhx</author>
         <description>&lt;h2&gt;rubygems&lt;/h2&gt;
 
 &lt;p&gt;使用淘宝&lt;a href=&quot;https://ruby.taobao.org/&quot;&gt;rubygems镜像&lt;/a&gt;&lt;/p&gt;
@@ -37,7 +126,7 @@ socks5 = &amp;quot;127.0.0.1:1080&amp;quot;
         <title>Demo post</title>
         <link>xun.im/2014/03/07/demo-post/</link>
         <pubDate>Fri, 07 Mar 2014 00:00:00 +0800</pubDate>
-        <author>Aigars Dzerviniks</author>
+        <author>wuhx</author>
         <description>&lt;p&gt;Praesent tincidunt vestibulum sem nec eleifend. Pellentesque adipiscing mollis adipiscing. Sed ipsum sem, eleifend eget dapibus in, tincidunt ut dolor. Curabitur gravida urna leo, eget auctor turpis feugiat non. Vivamus pharetra, lorem id ullamcorper rutrum, eros erat condimentum erat, ac dignissim lorem nisi nec nunc. Praesent tellus mi, volutpat quis nisl et, consectetur blandit nibh.&lt;/p&gt;
 
 &lt;p&gt;Nulla sit amet nulla non odio sodales mollis elementum sed sem. Aenean et laoreet enim. Curabitur vulputate, mi rutrum commodo condimentum, enim nunc feugiat magna, vel rutrum sapien ante nec ante. Donec nec nibh placerat, molestie felis ac, vulputate arcu. Donec condimentum pellentesque nibh vel tincidunt. Fusce sem ipsum, varius at laoreet vitae, accumsan sed nisl. Nunc eget viverra diam. Aliquam pulvinar, enim id commodo tincidunt, risus lectus pharetra lacus, et semper enim ligula ut mauris. Sed vitae sollicitudin ante. In sollicitudin placerat dui et sagittis.&lt;/p&gt;
