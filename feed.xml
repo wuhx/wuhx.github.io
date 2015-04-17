@@ -6,8 +6,8 @@
     <atom:link href="xun.im/feed.xml" rel="self" type="application/rss+xml" />
     <description></description>
     <language>en-us</language>
-    <pubDate>Thu, 16 Apr 2015 11:43:58 +0800</pubDate>
-    <lastBuildDate>Thu, 16 Apr 2015 11:43:58 +0800</lastBuildDate>
+    <pubDate>Fri, 17 Apr 2015 11:37:08 +0800</pubDate>
+    <lastBuildDate>Fri, 17 Apr 2015 11:37:08 +0800</lastBuildDate>
 
     
       <item>
@@ -31,7 +31,9 @@
   &amp;quot;ch.qos.logback&amp;quot; % &amp;quot;logback-classic&amp;quot; % &amp;quot;1.1.3&amp;quot;,
   &amp;quot;commons-io&amp;quot; % &amp;quot;commons-io&amp;quot; % &amp;quot;2.4&amp;quot; % &amp;quot;test&amp;quot;)
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-&lt;h2&gt;actor中记录日志&lt;/h2&gt;
+&lt;h2&gt;actor系统中记录日志的三种方法&lt;/h2&gt;
+
+&lt;h3&gt;1 通过ActorLogging记录日志&lt;/h3&gt;
 
 &lt;p&gt;akka提供了ActorLogging这个trait，方便在actor中记录日志。&lt;/p&gt;
 &lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-scala&quot; data-lang=&quot;scala&quot;&gt;class MasterActor extends Actor with akka.actor.ActorLogging{
@@ -44,19 +46,21 @@
   }
 }
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-&lt;p&gt;但ActorLogging这个trait只能mix到Actor类上。&lt;/p&gt;
+&lt;h3&gt;2 通过akka.event.Logging记录日志　&lt;/h3&gt;
+
+&lt;p&gt;ActorLogging这个trait只能mix到Actor类上。&lt;/p&gt;
 
 &lt;p&gt;在其他非actor类上，如果能访问到actor系统，可利用它的event stream进行log。&lt;/p&gt;
 &lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-scala&quot; data-lang=&quot;scala&quot;&gt;import akka.event.Logging
 val log = Logging(system.eventStream, &amp;quot;log prefix:&amp;quot;)
 log.debug(&amp;quot;debug log&amp;quot;)
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-&lt;p&gt;否则也可以直接通过slf4j访问logback记录日志。&lt;/p&gt;
+&lt;h3&gt;3 直接通过slf4j访问logback记录日志&lt;/h3&gt;
 &lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-scala&quot; data-lang=&quot;scala&quot;&gt;import org.slf4j.LoggerFactory
 val log = LoggerFactory.getLogger(getClass)
 log.debug(&amp;quot;Hello Logger!&amp;quot;)
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-&lt;p&gt;上面这3种log方式因为用的都是同一个logback实例，所以输出是统一的，区别是akka提供的log接口能够在记录时自动带上actor地址等信息，极大的方便定位问题。&lt;/p&gt;
+&lt;p&gt;这3种log方式因为用的都是同一个logback实例，所以输出是统一的，区别是akka提供的log接口能够在记录时自动带上actor地址等信息，能极大的方便定位问题。&lt;/p&gt;
 
 &lt;h2&gt;logback的配置&lt;/h2&gt;
 
@@ -91,35 +95,14 @@ log.debug(&amp;quot;Hello Logger!&amp;quot;)
     &amp;lt;/root&amp;gt;
 &amp;lt;/configuration&amp;gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-&lt;p&gt;日志的每种输出方式对应一个appender，除了上面用到的ConsoleAppender和FileAppender，还有通过网络发送日志到远程日志服务器的Appender，用户也可自定义appender，如日志云服务提供商loggly就有自己的&lt;a href=&quot;https://github.com/qos-ch/logback-extensions/wiki/Loggly&quot;&gt;Appender&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;日志的每种输出方式对应一个appender，除了上面用到的ConsoleAppender和FileAppender，还有通过网络发送日志到远程日志服务器的Appender，用户也可自定义appender，如日志云服务提供商loggly就有自己的&lt;a href=&quot;https://github.com/qos-ch/logback-extensions/wiki/Loggly&quot;&gt;Appender&lt;/a&gt;。分布式消息系统kafka也能通过&lt;a href=&quot;http://kafka.apache.org/07/quickstart.html&quot;&gt;Appender&lt;/a&gt;直接在某个topic上接收log日志。&lt;/p&gt;
 
 &lt;p&gt;更多语法参考：http://logback.qos.ch/manual/appenders.html&lt;/p&gt;
 
-&lt;p&gt;最后推荐一篇LinkedIn工程师关于日志的长文&lt;a href=&quot;https://engineering.linkedin.com/distributed-systems/log-what-every-software-engineer-should-know-about-real-time-datas-unifying&quot;&gt;The Log: What every software engineer should know about real-time data&amp;#39;s unifying abstraction&lt;/a&gt;，当然他说的日志已经超出了简单记录调试信息的范畴了。&lt;/p&gt;
+&lt;p&gt;最后推荐一篇LinkedIn工程师关于日志的长文&lt;a href=&quot;https://engineering.linkedin.com/distributed-systems/log-what-every-software-engineer-should-know-about-real-time-datas-unifying&quot;&gt;The Log: What every software engineer should know about real-time data&amp;#39;s unifying abstraction&lt;/a&gt;，当然他说的日志已经超出了简单记录调试信息的范畴了，但其中一些观点很有意思，如数据库其实是一种特殊形式的日志，按照这个思路所谓大数据其实就是如何翻日志了，日志将是整个系统最重要的资产。&lt;/p&gt;
+
+&lt;p&gt;相关代码已提交&lt;a href=&quot;https://github.com/wuhx/akka-log-example&quot;&gt;github&lt;/a&gt;, 欢迎fork交流。&lt;/p&gt;
 </description>
-      </item>
-    
-      <item>
-        <title>墙内资源</title>
-        <link>xun.im/2015/04/12/beyond-the-wall/</link>
-        <pubDate>Sun, 12 Apr 2015 00:00:00 +0800</pubDate>
-        <author>wuhx</author>
-        <description>&lt;h2&gt;rubygems&lt;/h2&gt;
-
-&lt;p&gt;使用淘宝&lt;a href=&quot;https://ruby.taobao.org/&quot;&gt;rubygems镜像&lt;/a&gt;&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;$ gem sources --remove https://rubygems.org/
-$ gem sources -a https://ruby.taobao.org/
-$ gem sources -l
-*** CURRENT SOURCES ***
-
-https://ruby.taobao.org
-# 请确保只有 ruby.taobao.org
-$ gem install rails
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-&lt;h2&gt;curl代理（shadowsocks）&lt;/h2&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;λ cat ~/.curlrc
-socks5 = &amp;quot;127.0.0.1:1080&amp;quot;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</description>
       </item>
     
       <item>

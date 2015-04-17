@@ -70,7 +70,9 @@
   &quot;ch.qos.logback&quot; % &quot;logback-classic&quot; % &quot;1.1.3&quot;,
   &quot;commons-io&quot; % &quot;commons-io&quot; % &quot;2.4&quot; % &quot;test&quot;)
 </code></pre></div>
-<h2>actor中记录日志</h2>
+<h2>actor系统中记录日志的三种方法</h2>
+
+<h3>1 通过ActorLogging记录日志</h3>
 
 <p>akka提供了ActorLogging这个trait，方便在actor中记录日志。</p>
 <div class="highlight"><pre><code class="language-scala" data-lang="scala">class MasterActor extends Actor with akka.actor.ActorLogging{
@@ -83,19 +85,21 @@
   }
 }
 </code></pre></div>
-<p>但ActorLogging这个trait只能mix到Actor类上。</p>
+<h3>2 通过akka.event.Logging记录日志　</h3>
+
+<p>ActorLogging这个trait只能mix到Actor类上。</p>
 
 <p>在其他非actor类上，如果能访问到actor系统，可利用它的event stream进行log。</p>
 <div class="highlight"><pre><code class="language-scala" data-lang="scala">import akka.event.Logging
 val log = Logging(system.eventStream, &quot;log prefix:&quot;)
 log.debug(&quot;debug log&quot;)
 </code></pre></div>
-<p>否则也可以直接通过slf4j访问logback记录日志。</p>
+<h3>3 直接通过slf4j访问logback记录日志</h3>
 <div class="highlight"><pre><code class="language-scala" data-lang="scala">import org.slf4j.LoggerFactory
 val log = LoggerFactory.getLogger(getClass)
 log.debug(&quot;Hello Logger!&quot;)
 </code></pre></div>
-<p>上面这3种log方式因为用的都是同一个logback实例，所以输出是统一的，区别是akka提供的log接口能够在记录时自动带上actor地址等信息，极大的方便定位问题。</p>
+<p>这3种log方式因为用的都是同一个logback实例，所以输出是统一的，区别是akka提供的log接口能够在记录时自动带上actor地址等信息，能极大的方便定位问题。</p>
 
 <h2>logback的配置</h2>
 
@@ -130,11 +134,13 @@ log.debug(&quot;Hello Logger!&quot;)
     &lt;/root&gt;
 &lt;/configuration&gt;
 </code></pre></div>
-<p>日志的每种输出方式对应一个appender，除了上面用到的ConsoleAppender和FileAppender，还有通过网络发送日志到远程日志服务器的Appender，用户也可自定义appender，如日志云服务提供商loggly就有自己的<a href="https://github.com/qos-ch/logback-extensions/wiki/Loggly">Appender</a>。</p>
+<p>日志的每种输出方式对应一个appender，除了上面用到的ConsoleAppender和FileAppender，还有通过网络发送日志到远程日志服务器的Appender，用户也可自定义appender，如日志云服务提供商loggly就有自己的<a href="https://github.com/qos-ch/logback-extensions/wiki/Loggly">Appender</a>。分布式消息系统kafka也能通过<a href="http://kafka.apache.org/07/quickstart.html">Appender</a>直接在某个topic上接收log日志。</p>
 
 <p>更多语法参考：http://logback.qos.ch/manual/appenders.html</p>
 
-<p>最后推荐一篇LinkedIn工程师关于日志的长文<a href="https://engineering.linkedin.com/distributed-systems/log-what-every-software-engineer-should-know-about-real-time-datas-unifying">The Log: What every software engineer should know about real-time data&#39;s unifying abstraction</a>，当然他说的日志已经超出了简单记录调试信息的范畴了。</p>
+<p>最后推荐一篇LinkedIn工程师关于日志的长文<a href="https://engineering.linkedin.com/distributed-systems/log-what-every-software-engineer-should-know-about-real-time-datas-unifying">The Log: What every software engineer should know about real-time data&#39;s unifying abstraction</a>，当然他说的日志已经超出了简单记录调试信息的范畴了，但其中一些观点很有意思，如数据库其实是一种特殊形式的日志，按照这个思路所谓大数据其实就是如何翻日志了，日志将是整个系统最重要的资产。</p>
+
+<p>相关代码已提交<a href="https://github.com/wuhx/akka-log-example">github</a>, 欢迎fork交流。</p>
 
 </article>
 
@@ -158,5 +164,28 @@ log.debug(&quot;Hello Logger!&quot;)
         $("article").fitVids();
       });
     </script>
+		
+		<!-- google analystics for xun.im -->
+		<script>
+		  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+		  ga('create', 'UA-61979906-1', 'auto');
+		  ga('send', 'pageview');
+		</script>
+		<!-- baidu site for xun.im -->
+		<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "//hm.baidu.com/hm.js?b62786d99652b034add78b003086816f";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+		</script>
+		
+		
+		
   </body>
 </html>
