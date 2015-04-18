@@ -19,6 +19,14 @@ task :new do |t, args|
   end
 end
 
+task :publish do
+  puts "git push to remote repo"
+  `git commit . -m 'update' && git push`
+  `cd _site && git commit . -m 'update' && git push`
+end
+
+
+
 task :install do
   puts "bundle install jekyll --path vendor/bundle"
   `sudo gem install bundle`
@@ -44,8 +52,10 @@ desc 'Deploy with rake "depoly[comment]"'
 task :deploy, [:comment] => :generate do |t, args|
   if args.comment then
     `git commit . -m '#{args.comment}' && git push`
+    `cd _site && git commit . -m '#{args.comment}' && git push`
   else
-    `git commit . -m 'new deployment' && git push`
+    `git commit . -m 'update' && git push`
+    `cd _site && git commit . -m 'update' && git push`
   end
 end
 
