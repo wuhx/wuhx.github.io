@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!-- meta information -->
+<meta charset="utf-8">
+<meta name="description" 
+      content="对初学scala的人，implicit像一个黑魔法，来无影去无踪，像它的名字一样非常“含蓄”。从某种意义上讲，implicit是一个类型系统的游戏。scala是强类型系统，所有的参数都需要符合类型预期，如果需要一个Int类型，你传来一..." >
+<meta name="author" content="wuhx">
+
+<!-- Enable responsiveness on mobile devices-->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+<!-- title -->
+<title>scala的implicit和magnet模式 &middot; Not my idea</title>
+
+<!-- icons -->
+<link rel="shortcut icon" href="/public/images/favicon.ico" />
+
+<!-- stylesheets -->
+<link rel="stylesheet" href="/public/css/responsive.gs.12col.css">
+<link rel="stylesheet" href="/public/css/animate.min.css">
+<link rel="stylesheet" href="/public/css/main.css">
+
+<!-- Google fonts -->
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,400italic&subset=latin-ext">
+
+
+
+<!-- feed links -->
+<link rel="alternate" href="xun.im/feed.xml" type="application/rss+xml" title="">
+
+  </head>
+  <body>
+    <div class="container azul">
+      <header class="top row gutters">
+        <div class="col span_2 center">
+          <!-- TODO: add baseurl to the logo link -->
+          <a href="xun.im" id="logo" title="Not my idea"
+             style="background-image: url(/public/images/logo.png);"></a>
+        </div>
+        <nav class="col span_10 top-navbar">
+  
+  <a href="/" title="Home"
+     >Home</a>
+  
+  <a href="/about" title="About"
+     >About</a>
+  
+</nav>
+
+      </header>
+
+      <article class="single row gutters">
+  <time class="published" datetime="2015-04-21">21 April 2015</time>
+  <h2>scala的implicit和magnet模式</h2>
+
+  <p>对初学scala的人，implicit像一个黑魔法，来无影去无踪，像它的名字一样非常“含蓄”。</p>
+
+<p>从某种意义上讲，implicit是一个类型系统的游戏。scala是强类型系统，所有的参数都需要符合类型预期，如果需要一个Int类型，你传来一个String，编译器会报类型不符错误。implicit的引入，使在报错之前还有一次机会，即：如果编译器在当前作用域内找到一个从String转换到Int的implicit定义函数，编译器会用这个implicit把你传给它的String转换成它需要的Int，于是一切又愉快的发生下去了。</p>
+
+<p>当然这只是implicit的一种使用场景，spray.io（已合并到akka-http）的magnet模式利用的就是这个特性。</p>
+
+<h2>magnet模式</h2>
+
+<p>magnet模式简单讲就是通过定义一个magnet类型作为统一的参数，然后针对需要重载的参数列表，类型等，在magnet类型的companion object中实现相应的转换为magnet类型的implitcit函数。</p>
+
+<p>如：可以定义一个Magnet类型实现一个接受任意参数的add函数</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">def add(magnet: MyMagnet): magnet.Result = magnet()
+
+sealed trait MyMagnet {
+  type Result
+  def apply(): Result
+}
+
+object MyMagnet {
+  //一个整形参数到MyMagenet的转换
+  implicit def fromInt(i: Int) =
+    new MyMagnet {
+      type Result = Int
+      def apply(): Result = i + 1
+    }
+  //一个String参数到MyMagenet的转换
+  implicit def fromString(s: String) =
+    new MyMagnet {
+      type Result = String
+      def apply(): Result = &quot;hello &quot; + s
+    }
+  //一个String参数加一个整形参数到MyMagenet的转换
+  implicit def fromStringAndInt(tuple: (String, Int)) =
+    new MyMagnet {
+      type Result = String
+      def apply(): Result = tuple._1 + tuple._2.toString
+    }
+}
+</code></pre></div>
+<p>调用的时候可以：</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">scala&gt; add(1)
+res9: Int = 2
+
+scala&gt; add(&quot;world&quot;)
+res10: String = hello world
+
+scala&gt; add(&quot;happy string &quot;, 5)
+res11: String = happy string 5
+</code></pre></div>
+<p>看到这里，你可能会说这不就是重载吗？java和scala原生就支持重载，但jvm对泛型（generics）的支持是通过类型擦除（type erasure）实现的，这意味着java常规的重载无法带类型参数，如：jvm无法区分下面这种类型不同的List参数。</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">scala&gt; :paste
+// Entering paste mode (ctrl-D to finish)
+
+def add(a: List[Int]): Unit = {}
+def add(a: List[String]): Unit = {}
+
+// Exiting paste mode, now interpreting.
+
+&lt;console&gt;:8: error: double definition:
+def add(a: List[Int]): Unit at line 7 and
+def add(a: List[String]): Unit at line 8
+have same type after erasure: (a: List)Unit
+def add(a: List[String]): Unit = {}
+
+</code></pre></div>
+<p>而magnet模式正好可以弥补这个缺憾，另外magnet模式相当于把重载的实现从语言层面拉到了自己的代码逻辑中，有利于针对性的引入一些新技巧减少冗余代码。当然，magnet的缺点也是很明显的：额外的一层增加了代码的复杂度。</p>
+
+<h3>隐含参数</h3>
+
+<p>implicit另外一个常用的场景是： 替代全局变量，作为某个执行上下文中的隐含参数。</p>
+
+<p>如：scala中异步的一个重要方法是使用Future。Futrure语义清晰，使用优雅，比手动起线程不知道高到哪里去了；），但Future在后台其实还是通过线程来执行的，要用Future就需要一个指定的执行上下文环境（<a href="http://www.scala-lang.org/api/2.11.6/index.html#scala.concurrent.ExecutionContext">ExecutionContext</a> ，一般是线程池）来跑Future。Future又是一个object（单例对象，不是普通类）没有地方放这个线程池的引用，解决方案只能是在所有Future的方法中加上ExecutionContext参数，方法很函数式，但接口略显冗余。好在scala有implicit，只要你调用Future时，上下文中有一个implicit的ExecutionContext变量，Future会自动在这个EC上跑代码。</p>
+
+<p>所以scala的<a href="http://www.scala-lang.org/files/archive/nightly/docs/library/index.html#scala.concurrent.Future">Future</a>方法都有一个(implicit executor: ExecutionContext)参数</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">def onComplete(U ⇒ U)(implicit executor: ExecutionContext): Unit
+</code></pre></div>
+<p>不同于全局变量，你在调用Future方法时，想使用某个指定的ExecutionContext，还是可以把它作为参数显示的传递给Future方法，这个显示传递的参数会覆盖implicit的参数。</p>
+
+<p>另：ExecutionContext的获取方法有</p>
+
+<ol>
+<li><p>直接引用全局EC。<code>import scala.concurrent.ExecutionContext.Implicits.global</code></p></li>
+<li><p>akka的actor中，引用当前actor系统的EC。<code>import context.dispatcher</code></p></li>
+<li><p>也可以手动创建一个独占使用，确保线程池里的线程不会被其他不相干任务耗尽。</p></li>
+</ol>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">   import java.util.concurrent.Executors
+   import concurrent.ExecutionContext
+   //创建一个4个线程的线程池
+   val executorService = Executors.newFixedThreadPool(4)
+   implicit val ec = ExecutionContext.fromExecutorService(executorService)
+</code></pre></div>
+<h3>更多相关资料：</h3>
+
+<p><a href="http://spray.io/blog/2012-12-13-the-magnet-pattern/">The magnet pattern</a></p>
+
+<p><a href="https://pavelfatin.com/design-patterns-in-scala/">Design Patterns in Scala</a></p>
+
+<p><a href="http://eed3si9n.com/revisiting-implicits-without-import-tax">revisiting implicits without import tax</a></p>
+
+<p><a href="http://www.artima.com/pins1ed/implicit-conversions-and-parameters.html">Chapter 21 of Programming in Scala, First Edition</a></p>
+
+<p><a href="http://ropas.snu.ac.kr/%7Ebruno/papers/TypeClasses.pdf">Type Classes as Objects and Implicits</a> </p>
+
+</article>
+
+
+      <footer>
+        <p>
+          This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/deed.en_US">Creative Commons Attribution-NonCommercial 4.0 International License</a>.
+        </p>
+      </footer>
+    </div>
+
+    <!-- scripts -->
+	<link rel="stylesheet" href="/public/css/tomorrow.css">
+	<script src="/public/js/highlight.pack.js"></script>
+	<script>hljs.initHighlightingOnLoad();</script>
+	
+    <script src="/public/js/jquery.min.js"></script>
+    <script src="/public/js/jquery.fitvids.js"></script>
+    <script>
+      $(document).ready(function(){
+        $("article").fitVids();
+      });
+    </script>
+		
+		<!-- google analystics for xun.im -->
+		<script>
+		  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+		  ga('create', 'UA-61979906-1', 'auto');
+		  ga('send', 'pageview');
+		</script>
+		<!-- baidu site for xun.im -->
+		<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "//hm.baidu.com/hm.js?b62786d99652b034add78b003086816f";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+		</script>
+		
+		
+		
+  </body>
+</html>
