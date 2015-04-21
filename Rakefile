@@ -21,7 +21,7 @@ end
 
 task :publish do
   puts "git push to remote repo"
-  `jekyll`
+  `jekyll build`
   `git commit . -m 'update' && git push`
   `cd _site && git add . --all && git commit . -m 'update' && git push`
 end
