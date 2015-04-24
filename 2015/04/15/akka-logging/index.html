@@ -94,6 +94,10 @@
 val log = Logging(system.eventStream, &quot;log prefix:&quot;)
 log.debug(&quot;debug log&quot;)
 </code></pre></div>
+<p>也可直接使用ActorSystem内置的LoggingAdapter。</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">val system = akka.actor.ActorSystem()
+system.log.error(&quot;log from ActorSystem&quot;)
+</code></pre></div>
 <h3>3 直接通过slf4j访问logback记录日志</h3>
 <div class="highlight"><pre><code class="language-scala" data-lang="scala">import org.slf4j.LoggerFactory
 val log = LoggerFactory.getLogger(getClass)

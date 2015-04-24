@@ -6,8 +6,8 @@
     <atom:link href="xun.im/feed.xml" rel="self" type="application/rss+xml" />
     <description>personal blog, scala, akka,</description>
     <language>en-us</language>
-    <pubDate>Fri, 24 Apr 2015 10:50:42 +0800</pubDate>
-    <lastBuildDate>Fri, 24 Apr 2015 10:50:42 +0800</lastBuildDate>
+    <pubDate>Fri, 24 Apr 2015 11:41:32 +0800</pubDate>
+    <lastBuildDate>Fri, 24 Apr 2015 11:41:32 +0800</lastBuildDate>
 
     
       <item>
@@ -164,6 +164,10 @@ def add(a: List[String]): Unit = {}
 &lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-scala&quot; data-lang=&quot;scala&quot;&gt;import akka.event.Logging
 val log = Logging(system.eventStream, &amp;quot;log prefix:&amp;quot;)
 log.debug(&amp;quot;debug log&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;也可直接使用ActorSystem内置的LoggingAdapter。&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-scala&quot; data-lang=&quot;scala&quot;&gt;val system = akka.actor.ActorSystem()
+system.log.error(&amp;quot;log from ActorSystem&amp;quot;)
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;h3&gt;3 直接通过slf4j访问logback记录日志&lt;/h3&gt;
 &lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-scala&quot; data-lang=&quot;scala&quot;&gt;import org.slf4j.LoggerFactory
