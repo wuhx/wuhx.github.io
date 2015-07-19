@@ -6,9 +6,204 @@
     <atom:link href="xun.im/feed.xml" rel="self" type="application/rss+xml" />
     <description>personal blog, scala, akka,</description>
     <language>en-us</language>
-    <pubDate>Mon, 27 Apr 2015 16:03:21 +0800</pubDate>
-    <lastBuildDate>Mon, 27 Apr 2015 16:03:21 +0800</lastBuildDate>
+    <pubDate>Sun, 19 Jul 2015 23:53:38 +0800</pubDate>
+    <lastBuildDate>Sun, 19 Jul 2015 23:53:38 +0800</lastBuildDate>
 
+    
+      <item>
+        <title>微信你的Kindle：记录我的第一个Web项目</title>
+        <link>xun.im/2015/07/19/weixin-robot-vs-kindle/</link>
+        <pubDate>Sun, 19 Jul 2015 00:00:00 +0800</pubDate>
+        <author>wuhx</author>
+        <description>&lt;ul id=&quot;markdown-toc&quot;&gt;
+  &lt;li&gt;&lt;a href=&quot;#section&quot; id=&quot;markdown-toc-section&quot;&gt;一：实现了什么&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#section-1&quot; id=&quot;markdown-toc-section-1&quot;&gt;二：为什么要做这个&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#section-2&quot; id=&quot;markdown-toc-section-2&quot;&gt;三：用到的技术&lt;/a&gt;    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#scalaakka&quot; id=&quot;markdown-toc-scalaakka&quot;&gt;1  关于Scala和Akka&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#section-3&quot; id=&quot;markdown-toc-section-3&quot;&gt;2  关于数据库&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#section-4&quot; id=&quot;markdown-toc-section-4&quot;&gt;3  关于爬虫&lt;/a&gt;        &lt;ul&gt;
+          &lt;li&gt;&lt;a href=&quot;#section-5&quot; id=&quot;markdown-toc-section-5&quot;&gt;爬取网页类型&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#section-6&quot; id=&quot;markdown-toc-section-6&quot;&gt;文档的生成&lt;/a&gt;&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#section-7&quot; id=&quot;markdown-toc-section-7&quot;&gt;4  关于微信机器人&lt;/a&gt;        &lt;ul&gt;
+          &lt;li&gt;&lt;a href=&quot;#section-8&quot; id=&quot;markdown-toc-section-8&quot;&gt;功能：&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#section-9&quot; id=&quot;markdown-toc-section-9&quot;&gt;稳定性：&lt;/a&gt;&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#section-10&quot; id=&quot;markdown-toc-section-10&quot;&gt;四： 总结&lt;/a&gt;    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#section-11&quot; id=&quot;markdown-toc-section-11&quot;&gt;附：&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;section&quot;&gt;一：实现了什么&lt;/h3&gt;
+
+&lt;p&gt;在任何能够分享到微信的APP，把你正在阅读的文章分享给一个微信机器人好友（非公众号），就能推送到你的Kindle上。&lt;/p&gt;
+
+&lt;p&gt;针对微信订阅号，知乎，简书，网易新闻，v2ex，github，stackoverflow 等多个网站校正排版，提供更好的阅读体验和推送速度。&lt;/p&gt;
+
+&lt;p&gt;亚马逊官方也有一个&lt;a href=&quot;http://mp.weixin.qq.com/s?__biz=MzAxMTAzNDM2OQ==&amp;amp;mid=203661957&amp;amp;idx=1&amp;amp;sn=92ff00865b49bc34d0cf4e853e678571#rd&quot;&gt;服务号&lt;/a&gt;提供类似的服务。&lt;/p&gt;
+
+&lt;p&gt;相比之下我们的优势：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;支持微信之外，从其他App分享。&lt;/li&gt;
+  &lt;li&gt;亚马逊官方服务号对非微信公共平台（http://mp.weixin.qq.com）的文章排版支持不好&lt;/li&gt;
+  &lt;li&gt;排版优化，生成的文档体积更小（平均每篇小三四百K），推送更快。&lt;/li&gt;
+  &lt;li&gt;图片支持格式更多。如&lt;a href=&quot;http://mp.weixin.qq.com/s?__biz=MjM5MDI1Nzk2MA==&amp;amp;mid=208393099&amp;amp;idx=3&amp;amp;sn=c3d6960dde14d37eb37fc4536cfdf21f&amp;amp;scene=1#rd&quot;&gt;这篇文章&lt;/a&gt; 的图片亚马逊官方服务号不支持，我们支持。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&quot;section-1&quot;&gt;二：为什么要做这个&lt;/h3&gt;
+
+&lt;p&gt;对个人知识获取来说，这是一个最好的时代，通过一台手机你就可以获取到人类几乎所有的知识，但信息爆炸的同时，也造成了信息的贬值。在手机上我只愿意做浏览性的阅读，一条八卦新闻和一篇有深度的文章都只能获取我相同的关注力，超过千字的文章，拇指就会开始有些不耐烦的加快滑动，更遑论停下来思考一下。&lt;/p&gt;
+
+&lt;p&gt;kindle是一个伟大阅读工具，e-paper提供了最接近纸张的阅读体验。并且由于功能单一，更能让人专注于阅读。&lt;/p&gt;
+
+&lt;p&gt;对我来说一个理想的阅读方式是：&lt;/p&gt;
+
+&lt;p&gt;手机（或其他pad）做为一个信息源，快速浏览发现。需要进一步阅读的内容推送到kindle查看。&lt;/p&gt;
+
+&lt;h3 id=&quot;section-2&quot;&gt;三：用到的技术&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;主体架构：   Scala &amp;amp; Akka&lt;/li&gt;
+  &lt;li&gt;数据库：       ElasticSearch&lt;/li&gt;
+  &lt;li&gt;爬虫：           Jsoup &amp;amp; webdriver + phantomjs&lt;/li&gt;
+  &lt;li&gt;邮件服务：   AWS Mail &amp;amp; MailGun&lt;/li&gt;
+  &lt;li&gt;日志和监控：Logstash+Kibana+ElasticSearch&lt;/li&gt;
+  &lt;li&gt;微信机器人：webdriver + phantomjs + web微信&lt;/li&gt;
+  &lt;li&gt;web前端:        github page + 七牛云CDN&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;scalaakka&quot;&gt;1  关于Scala和Akka&lt;/h4&gt;
+
+&lt;p&gt;neveread.com有三个模块组成，&lt;code&gt;微信机器人&lt;/code&gt; &lt;code&gt;爬虫&lt;/code&gt; &lt;code&gt;邮件服务&lt;/code&gt;，他们通过&lt;a href=&quot;http://doc.akka.io/docs/akka/snapshot/common/cluster.html&quot;&gt;akka cluster&lt;/a&gt;协作，由AKKA提供位置无关性，可以运行在一台服务器上，也可以创建多个实例分布在多台服务器上。&lt;/p&gt;
+
+&lt;p&gt;在选择scala+akka之前考察过Erlang，非常喜欢这门语言，特别是它的&lt;a href=&quot;http://erlang.org/doc/reference_manual/patterns.html&quot;&gt;Pattern Matching&lt;/a&gt;，&lt;a href=&quot;http://www.erlang.org/doc/programming_examples/list_comprehensions.html&quot;&gt;List Comprehensions&lt;/a&gt; 让我大开眼界，以及OTP中的Actor概念。但最终放弃是因为几个缺点（我认为的）：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;小众语言，生态系统弱。&lt;/li&gt;
+  &lt;li&gt;IDE支持不好。&lt;/li&gt;
+  &lt;li&gt;ErlangVM的性能弱。&lt;/li&gt;
+  &lt;li&gt;语法简单，但过于简单。&lt;/li&gt;
+  &lt;li&gt;非类型安全。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Scala/Akka在复制了Erlang的OTP框架之外，正好弥补了这些缺点。&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;JVM的生态系统&lt;/li&gt;
+  &lt;li&gt;Intellj官方插件&lt;/li&gt;
+  &lt;li&gt;JVM的性能&lt;/li&gt;
+  &lt;li&gt;语法足够复杂，同时支持OOP和函数式。&lt;/li&gt;
+  &lt;li&gt;类型安全&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;作为一个从C语言转过来的人，编程思维方式的转变是个有趣的过程。之前对并发的理解多在用多线程同时解决某个问题，然后在各个线程中疲于同步各种变量的值（加锁，解锁），akka推崇的是状态分离（actor之间只能通过message交换信息），甚至消除可变状态（鼓励用val定义不可变变量，不用var定义可变变量），这些道理一开始的时候都懂，但写出来的代码，回头一看，其实就是裹着actor外衣的线程。&lt;/p&gt;
+
+&lt;p&gt;总结出一个结论：akka中一个actor的成本是极低的&lt;a href=&quot;http://doc.akka.io/docs/akka/snapshot/general/actor-systems.html#What_you_should_not_concern_yourself_with&quot;&gt;（内存占用300个字节）&lt;/a&gt;，远低于一个操作系统线程（几M栈空间），所以，actor和线程的使用模式有一个明显的不同，如果你的系统中始终只有少数几个Actor在包揽所有的工作，那就需要检查一下你对Actor的用法了。&lt;/p&gt;
+
+&lt;h4 id=&quot;section-3&quot;&gt;2  关于数据库&lt;/h4&gt;
+
+&lt;p&gt;ElasticSearch不是严格意义上的数据库，至少拿来做主数据库属于非典型应用。选中它主要是由于：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;在JVM生态系统内。只需添加一行sbt依赖，就能用代码直接起一个ES数据库实例，完全不需要外部依赖，非常方便。&lt;/li&gt;
+  &lt;li&gt;完善的REST接口。能够接收任意POST过来的Json文档，自动生成对应的scheme，并存储文档。&lt;/li&gt;
+  &lt;li&gt;文档友好，并且自动支持搜索。&lt;/li&gt;
+  &lt;li&gt;分布式。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;ElasticSearch默认是作为一个独立进程运行在专门供它使用的服务器上，对内存需求很大，在我1g内存的还跑着其他进程的小服务器上，经常会内存不够，引发GC，整个JVM世界都不好了。&lt;/p&gt;
+
+&lt;p&gt;针对我的特殊需求单独做了调整：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;数据量小（至少目前），调整ES_HEAP_SIZE到一个较小的值。&lt;/li&gt;
+  &lt;li&gt;部分数据（web微信 的session）只对本机的进程有用，无需同步到集群。设置session index的shards=1 replicas=0，以减小存储消耗。&lt;/li&gt;
+  &lt;li&gt;新session开启后，老的session数据就没用了，可以直接close，释放内存。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;虽然把embedded的ElasticSearch实例用在生产环境有点让人不太人放心，但embedded ES还有一个额外的好处：
+所有的配置都可动态编程配置。比如检测内网IP，自动将es绑定到内网，防止疏忽导致信息泄漏到外网。通过Akka cluster集群的event消息，动态配置ElasticSearch集群。&lt;/p&gt;
+
+&lt;h4 id=&quot;section-4&quot;&gt;3  关于爬虫&lt;/h4&gt;
+
+&lt;h5 id=&quot;section-5&quot;&gt;爬取网页类型&lt;/h5&gt;
+
+&lt;p&gt;需要采集的网页有两种情形：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;直接返回静态的HTML页面。&lt;/li&gt;
+  &lt;li&gt;只返回一个HTML页面框架，内容由javascript动态获取后添加。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;第一种情形，也是绝大部分网页的情况，只需设置合理的User-Agent和Referer即可直接用Jsoup采集。&lt;/p&gt;
+
+&lt;p&gt;第二种情况，如网易客户端，evernotes等，复杂一点，有两种处理方法：&lt;/p&gt;
+
+&lt;p&gt;a）用webdriver驱动浏览器执行javascript获取内容，这种方法通用性好，但比较耗资源。&lt;/p&gt;
+
+&lt;p&gt;b）分析javascript加载内容的模式，用代码模拟抓取内容。&lt;/p&gt;
+
+&lt;h5 id=&quot;section-6&quot;&gt;文档的生成&lt;/h5&gt;
+
+&lt;p&gt;文档有两种方式生成：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;通过识别网页内容（包括文章主体，用户评论），用jsoup提取出来，插入到一个模板文档中，这种方式生成的文档排版更干净，并且由于不用爬取不必要的图片和内容，生成的体积更小，爬取速度也更快。&lt;/li&gt;
+  &lt;li&gt;对于内容识别失败的网页，先用jsoup clean一遍（去掉javascript代码，统一UTF8编码等）后，保留原有样式投递。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;这两种情况，图片都会被重新编码成base64格式内嵌到网页中，由于base64编码效率比较低，编码后的数据普遍比原图大几倍，目前的规则是超过150K的图片，不重新编码，而是提供一个链接供用户在阅读时点击。&lt;/p&gt;
+
+&lt;h4 id=&quot;section-7&quot;&gt;4  关于微信机器人&lt;/h4&gt;
+
+&lt;p&gt;通过webdriver + phantmjs 上运行web微信实现。&lt;/p&gt;
+
+&lt;h5 id=&quot;section-8&quot;&gt;功能：&lt;/h5&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;接收好友消息，检测内容，并回复。&lt;/li&gt;
+  &lt;li&gt;提取用户分享的网址&lt;/li&gt;
+  &lt;li&gt;接收好友验证消息，根据验证码决定是否通过验证.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;碰到的一个坑是正好遇上&lt;a href=&quot;https://twitter.com/mienflying/status/598700471126085632&quot;&gt;web微信改版&lt;/a&gt;，本地测试无论用chrome驱动还是phantomjs驱动都没有问题，deploy到服务器则有时OK，有时失败，没有规律。&lt;/p&gt;
+
+&lt;p&gt;现在的代码会检测web微信版本，同时支持目前的两个版本。&lt;/p&gt;
+
+&lt;h5 id=&quot;section-9&quot;&gt;稳定性：&lt;/h5&gt;
+
+&lt;p&gt;微信机器人是最早实现的模块，断断续续跑了几个月，偶尔掉线过几次，为此专门创建了一个状态监控的Actor，一旦检测到掉线就会触发Akka的supervisor策略自动重启，并用Twilio发出电话通知。&lt;/p&gt;
+
+&lt;p&gt;压力测试模拟过瞬间收到100条交替不同用户的消息，能够一一回复，只是延时会大一点。为了防止消息发送太快，每条消息间设置了0-1秒的延时，消息队列使用PriorityQueue实现，保证重要消息的优先级。&lt;/p&gt;
+
+&lt;h3 id=&quot;section-10&quot;&gt;四： 总结&lt;/h3&gt;
+
+&lt;p&gt;neveread.com是我第一个web项目，作为一个前BSP驱动码农，处处要学，费力自不必提，但那种看到一个程序从无到有的运行起来，只要拿起手机无时无地都能和你互动的成就感，是在一个大公司编写模块代码无法获取到的。&lt;/p&gt;
+
+&lt;h4 id=&quot;section-11&quot;&gt;附：&lt;/h4&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;a href=&quot;http://neveread.com/&quot;&gt;http://neveread.com/&lt;/a&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;a href=&quot;http://mp.weixin.qq.com/s?__biz=MzI2MDAxNzMzMg%3D%3D&amp;amp;mid=208689533&amp;amp;idx=1&amp;amp;sn=59368c84e0b2060aaba1e3ca9da0c550&amp;amp;scene=1&amp;amp;key=c76941211a49ab58a303ed91f93a38d9d39196ac3f9ab0641f3be3b436315ca17bf3f505967d92a432977d732764e6a1&amp;amp;ascene=1&amp;amp;uin=MTYwNDMxMTUwNg%253D%253D&quot;&gt;帮助文档&lt;/a&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;微信机器人1: 文字鲨（验证码请邮件pm@kindle.pm）&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://7u2pdt.com1.z0.glb.clouddn.com/robot-sha.jpeg&quot; alt=&quot;文字鲨&quot; /&gt;&lt;/p&gt;
+
+</description>
+      </item>
     
       <item>
         <title>scala的implicit和magnet模式</title>
@@ -21,19 +216,21 @@
 
 &lt;p&gt;当然这只是implicit的一种使用场景，spray.io（已合并到akka-http）的magnet模式利用的就是这个特性。&lt;/p&gt;
 
-&lt;h2&gt;magnet模式&lt;/h2&gt;
+&lt;h2 id=&quot;magnet&quot;&gt;magnet模式&lt;/h2&gt;
 
 &lt;p&gt;magnet模式简单讲就是通过定义一个magnet类型作为统一的参数，然后针对需要重载的参数列表，类型等，在magnet类型的companion object中实现相应的转换为magnet类型的implitcit函数。&lt;/p&gt;
 
 &lt;p&gt;如：可以定义一个Magnet类型实现一个接受任意参数的add函数&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-scala&quot; data-lang=&quot;scala&quot;&gt;def add(magnet: MyMagnet): magnet.Result = magnet()
 
-sealed trait MyMagnet {
+&lt;p&gt;``` scala
+def add(magnet: MyMagnet): magnet.Result = magnet()&lt;/p&gt;
+
+&lt;p&gt;sealed trait MyMagnet {
   type Result
   def apply(): Result
-}
+}&lt;/p&gt;
 
-object MyMagnet {
+&lt;p&gt;object MyMagnet {
   //一个整形参数到MyMagenet的转换
   implicit def fromInt(i: Int) =
     new MyMagnet {
@@ -44,7 +241,7 @@ object MyMagnet {
   implicit def fromString(s: String) =
     new MyMagnet {
       type Result = String
-      def apply(): Result = &amp;quot;hello &amp;quot; + s
+      def apply(): Result = “hello “ + s
     }
   //一个String参数加一个整形参数到MyMagenet的转换
   implicit def fromStringAndInt(tuple: (String, Int)) =
@@ -53,70 +250,88 @@ object MyMagnet {
       def apply(): Result = tuple._1 + tuple._2.toString
     }
 }
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+```&lt;/p&gt;
+
 &lt;p&gt;调用的时候可以：&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;scala&amp;gt; add(1)
-res9: Int = 2
 
-scala&amp;gt; add(&amp;quot;world&amp;quot;)
-res10: String = hello world
+&lt;p&gt;``` bash
+scala&amp;gt; add(1)
+res9: Int = 2&lt;/p&gt;
 
-scala&amp;gt; add(&amp;quot;happy string &amp;quot;, 5)
+&lt;p&gt;scala&amp;gt; add(“world”)
+res10: String = hello world&lt;/p&gt;
+
+&lt;p&gt;scala&amp;gt; add(“happy string “, 5)
 res11: String = happy string 5
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+```&lt;/p&gt;
+
 &lt;p&gt;看到这里，你可能会说这不就是重载吗？java和scala原生就支持重载，但jvm对泛型（generics）的支持是通过类型擦除（type erasure）实现的，这意味着java常规的重载无法带类型参数，如：jvm无法区分下面这种类型不同的List参数。&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-scala&quot; data-lang=&quot;scala&quot;&gt;scala&amp;gt; :paste
-// Entering paste mode (ctrl-D to finish)
 
-def add(a: List[Int]): Unit = {}
-def add(a: List[String]): Unit = {}
+&lt;p&gt;``` scala
+scala&amp;gt; :paste
+// Entering paste mode (ctrl-D to finish)&lt;/p&gt;
 
-// Exiting paste mode, now interpreting.
+&lt;p&gt;def add(a: List[Int]): Unit = {}
+def add(a: List[String]): Unit = {}&lt;/p&gt;
 
-&amp;lt;console&amp;gt;:8: error: double definition:
+&lt;p&gt;// Exiting paste mode, now interpreting.&lt;/p&gt;
+
+&lt;console&gt;:8: error: double definition:
 def add(a: List[Int]): Unit at line 7 and
 def add(a: List[String]): Unit at line 8
 have same type after erasure: (a: List)Unit
 def add(a: List[String]): Unit = {}
 
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-&lt;p&gt;而magnet模式正好可以弥补这个缺憾，另外magnet模式相当于把重载的实现从语言层面拉到了自己的代码逻辑中，有利于针对性的引入一些新技巧减少冗余代码。当然，magnet的缺点也是很明显的：额外的一层增加了代码的复杂度。&lt;/p&gt;
+```
 
-&lt;h3&gt;隐含参数&lt;/h3&gt;
+而magnet模式正好可以弥补这个缺憾，另外magnet模式相当于把重载的实现从语言层面拉到了自己的代码逻辑中，有利于针对性的引入一些新技巧减少冗余代码。当然，magnet的缺点也是很明显的：额外的一层增加了代码的复杂度。
 
-&lt;p&gt;implicit另外一个常用的场景是： 替代全局变量，作为某个执行上下文中的隐含参数。&lt;/p&gt;
+### 隐含参数
 
-&lt;p&gt;如：scala中异步的一个重要方法是使用Future。Futrure语义清晰，使用优雅，比手动起线程不知道高到哪里去了；），但Future在后台其实还是通过线程来执行的，要用Future就需要一个指定的执行上下文环境（&lt;a href=&quot;http://www.scala-lang.org/api/2.11.6/index.html#scala.concurrent.ExecutionContext&quot;&gt;ExecutionContext&lt;/a&gt; ，一般是线程池）来跑Future。Future又是一个object（单例对象，不是普通类）没有地方放这个线程池的引用，解决方案只能是在所有Future的方法中加上ExecutionContext参数，方法很函数式，但接口略显冗余。好在scala有implicit，只要你调用Future时，上下文中有一个implicit的ExecutionContext变量，Future会自动在这个EC上跑代码。&lt;/p&gt;
+implicit另外一个常用的场景是： 替代全局变量，作为某个执行上下文中的隐含参数。
 
-&lt;p&gt;所以scala的&lt;a href=&quot;http://www.scala-lang.org/files/archive/nightly/docs/library/index.html#scala.concurrent.Future&quot;&gt;Future&lt;/a&gt;方法都有一个(implicit executor: ExecutionContext)参数&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-scala&quot; data-lang=&quot;scala&quot;&gt;def onComplete(U ⇒ U)(implicit executor: ExecutionContext): Unit
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-&lt;p&gt;不同于全局变量，你在调用Future方法时，想使用某个指定的ExecutionContext，还是可以把它作为参数显示的传递给Future方法，这个显示传递的参数会覆盖implicit的参数。&lt;/p&gt;
+如：scala中异步的一个重要方法是使用Future。Futrure语义清晰，使用优雅，比手动起线程不知道高到哪里去了；），但Future在后台其实还是通过线程来执行的，要用Future就需要一个指定的执行上下文环境（[ExecutionContext](http://www.scala-lang.org/api/2.11.6/index.html#scala.concurrent.ExecutionContext) ，一般是线程池）来跑Future。Future又是一个object（单例对象，不是普通类）没有地方放这个线程池的引用，解决方案只能是在所有Future的方法中加上ExecutionContext参数，方法很函数式，但接口略显冗余。好在scala有implicit，只要你调用Future时，上下文中有一个implicit的ExecutionContext变量，Future会自动在这个EC上跑代码。
 
-&lt;p&gt;另：ExecutionContext的获取方法有&lt;/p&gt;
+所以scala的[Future](http://www.scala-lang.org/files/archive/nightly/docs/library/index.html#scala.concurrent.Future)方法都有一个(implicit executor: ExecutionContext)参数
 
-&lt;ol&gt;
-&lt;li&gt;&lt;p&gt;直接引用全局EC。&lt;code&gt;import scala.concurrent.ExecutionContext.Implicits.global&lt;/code&gt;&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;akka的actor中，引用当前actor系统的EC。&lt;code&gt;import context.dispatcher&lt;/code&gt;&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;也可以手动创建一个独占使用，确保线程池里的线程不会被其他不相干任务耗尽。&lt;/p&gt;&lt;/li&gt;
-&lt;/ol&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-scala&quot; data-lang=&quot;scala&quot;&gt;   import java.util.concurrent.Executors
+``` scala
+def onComplete(U ⇒ U)(implicit executor: ExecutionContext): Unit
+```
+
+不同于全局变量，你在调用Future方法时，想使用某个指定的ExecutionContext，还是可以把它作为参数显示的传递给Future方法，这个显示传递的参数会覆盖implicit的参数。
+
+另：ExecutionContext的获取方法有
+
+1. 直接引用全局EC。`import scala.concurrent.ExecutionContext.Implicits.global`
+   
+2. akka的actor中，引用当前actor系统的EC。`import context.dispatcher`
+   
+3. 也可以手动创建一个独占使用，确保线程池里的线程不会被其他不相干任务耗尽。
+   
+   ``` scala
+   import java.util.concurrent.Executors
    import concurrent.ExecutionContext
    //创建一个4个线程的线程池
    val executorService = Executors.newFixedThreadPool(4)
    implicit val ec = ExecutionContext.fromExecutorService(executorService)
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-&lt;h3&gt;更多相关资料：&lt;/h3&gt;
+   ```
+   
 
-&lt;p&gt;&lt;a href=&quot;http://spray.io/blog/2012-12-13-the-magnet-pattern/&quot;&gt;The magnet pattern&lt;/a&gt;&lt;/p&gt;
 
-&lt;p&gt;&lt;a href=&quot;https://pavelfatin.com/design-patterns-in-scala/&quot;&gt;Design Patterns in Scala&lt;/a&gt;&lt;/p&gt;
 
-&lt;p&gt;&lt;a href=&quot;http://eed3si9n.com/revisiting-implicits-without-import-tax&quot;&gt;revisiting implicits without import tax&lt;/a&gt;&lt;/p&gt;
+### 更多相关资料：
 
-&lt;p&gt;&lt;a href=&quot;http://www.artima.com/pins1ed/implicit-conversions-and-parameters.html&quot;&gt;Chapter 21 of Programming in Scala, First Edition&lt;/a&gt;&lt;/p&gt;
+[The magnet pattern](http://spray.io/blog/2012-12-13-the-magnet-pattern/)
 
-&lt;p&gt;&lt;a href=&quot;http://ropas.snu.ac.kr/%7Ebruno/papers/TypeClasses.pdf&quot;&gt;Type Classes as Objects and Implicits&lt;/a&gt; &lt;/p&gt;
+[Design Patterns in Scala](https://pavelfatin.com/design-patterns-in-scala/)
+
+[revisiting implicits without import tax](http://eed3si9n.com/revisiting-implicits-without-import-tax)
+
+[Chapter 21 of Programming in Scala, First Edition](http://www.artima.com/pins1ed/implicit-conversions-and-parameters.html)
+
+[Type Classes as Objects and Implicits](http://ropas.snu.ac.kr/~bruno/papers/TypeClasses.pdf) 
+
+&lt;/console&gt;
 </description>
       </item>
     
@@ -132,88 +347,106 @@ def add(a: List[String]): Unit = {}
 &lt;p&gt;akka日志功能是基于slf4j构建的。对于不熟悉java的人，slf4j，log4j，logback等基本上是这样一个关系：SLF4J是一套log接口，java.util.logging, logback, log4j等是具体的实现，而logback已逐渐取代log4j成为事实标准。&lt;/p&gt;
 
 &lt;p&gt;所以要使用akka的日志，除了akka-slf4j还需增加logback依赖。&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-scala&quot; data-lang=&quot;scala&quot;&gt;libraryDependencies ++= Seq(
-  &amp;quot;com.typesafe.akka&amp;quot; %% &amp;quot;akka-actor&amp;quot; % akkaVersion,
-  &amp;quot;com.typesafe.akka&amp;quot; %% &amp;quot;akka-contrib&amp;quot; % akkaVersion,
-  &amp;quot;com.typesafe.akka&amp;quot; %% &amp;quot;akka-testkit&amp;quot; % akkaVersion,
-  &amp;quot;com.typesafe.akka&amp;quot; %% &amp;quot;akka-slf4j&amp;quot; % akkaVersion,
-  &amp;quot;org.scalatest&amp;quot; %% &amp;quot;scalatest&amp;quot; % &amp;quot;2.2.4&amp;quot; % &amp;quot;test&amp;quot;,
-  &amp;quot;ch.qos.logback&amp;quot; % &amp;quot;logback-classic&amp;quot; % &amp;quot;1.1.3&amp;quot;,
-  &amp;quot;commons-io&amp;quot; % &amp;quot;commons-io&amp;quot; % &amp;quot;2.4&amp;quot; % &amp;quot;test&amp;quot;)
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-&lt;h2&gt;actor系统中记录日志的三种方法&lt;/h2&gt;
 
-&lt;h3&gt;1 通过ActorLogging记录日志&lt;/h3&gt;
+&lt;p&gt;&lt;code&gt;scala
+libraryDependencies ++= Seq(
+  &quot;com.typesafe.akka&quot; %% &quot;akka-actor&quot; % akkaVersion,
+  &quot;com.typesafe.akka&quot; %% &quot;akka-contrib&quot; % akkaVersion,
+  &quot;com.typesafe.akka&quot; %% &quot;akka-testkit&quot; % akkaVersion,
+  &quot;com.typesafe.akka&quot; %% &quot;akka-slf4j&quot; % akkaVersion,
+  &quot;org.scalatest&quot; %% &quot;scalatest&quot; % &quot;2.2.4&quot; % &quot;test&quot;,
+  &quot;ch.qos.logback&quot; % &quot;logback-classic&quot; % &quot;1.1.3&quot;,
+  &quot;commons-io&quot; % &quot;commons-io&quot; % &quot;2.4&quot; % &quot;test&quot;)
+&lt;/code&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;actor&quot;&gt;actor系统中记录日志的三种方法&lt;/h2&gt;
+
+&lt;h3 id=&quot;actorlogging&quot;&gt;1 通过ActorLogging记录日志&lt;/h3&gt;
 
 &lt;p&gt;akka提供了ActorLogging这个trait，方便在actor中记录日志。&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-scala&quot; data-lang=&quot;scala&quot;&gt;class MasterActor extends Actor with akka.actor.ActorLogging{
+
+&lt;p&gt;&lt;code&gt;scala
+class MasterActor extends Actor with akka.actor.ActorLogging{
   def receive = {
     case _ =&amp;gt;
-     log.debug(&amp;quot;debug log&amp;quot;)
-     log.info(&amp;quot;info log&amp;quot;)
-     log.warning(&amp;quot;warning log&amp;quot;)
-     log.error(&amp;quot;error log&amp;quot;)
+     log.debug(&quot;debug log&quot;)
+     log.info(&quot;info log&quot;)
+     log.warning(&quot;warning log&quot;)
+     log.error(&quot;error log&quot;)
   }
 }
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-&lt;h3&gt;2 通过akka.event.Logging记录日志　&lt;/h3&gt;
+&lt;/code&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;akkaeventlogging&quot;&gt;2 通过akka.event.Logging记录日志　&lt;/h3&gt;
 
 &lt;p&gt;ActorLogging这个trait只能mix到Actor类上。&lt;/p&gt;
 
 &lt;p&gt;在其他非actor类上，如果能访问到actor系统，可利用它的event stream进行log。&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-scala&quot; data-lang=&quot;scala&quot;&gt;import akka.event.Logging
-val log = Logging(system.eventStream, &amp;quot;log prefix:&amp;quot;)
-log.debug(&amp;quot;debug log&amp;quot;)
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;code&gt;scala
+import akka.event.Logging
+val log = Logging(system.eventStream, &quot;log prefix:&quot;)
+log.debug(&quot;debug log&quot;)
+&lt;/code&gt;&lt;/p&gt;
+
 &lt;p&gt;也可直接使用ActorSystem内置的LoggingAdapter。&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-scala&quot; data-lang=&quot;scala&quot;&gt;val system = akka.actor.ActorSystem()
-system.log.error(&amp;quot;log from ActorSystem&amp;quot;)
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-&lt;h3&gt;3 直接通过slf4j访问logback记录日志&lt;/h3&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-scala&quot; data-lang=&quot;scala&quot;&gt;import org.slf4j.LoggerFactory
+
+&lt;p&gt;&lt;code&gt;scala
+val system = akka.actor.ActorSystem()
+system.log.error(&quot;log from ActorSystem&quot;)
+&lt;/code&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;slf4jlogback&quot;&gt;3 直接通过slf4j访问logback记录日志&lt;/h3&gt;
+
+&lt;p&gt;&lt;code&gt;scala
+import org.slf4j.LoggerFactory
 val log = LoggerFactory.getLogger(getClass)
-log.debug(&amp;quot;Hello Logger!&amp;quot;)
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+log.debug(&quot;Hello Logger!&quot;)
+&lt;/code&gt;&lt;/p&gt;
+
 &lt;p&gt;这3种log方式因为用的都是同一个logback实例，所以输出是统一的，区别是akka提供的log接口能够在记录时自动带上actor地址等信息，能极大的方便定位问题。&lt;/p&gt;
 
-&lt;h2&gt;logback的配置&lt;/h2&gt;
+&lt;h2 id=&quot;logback&quot;&gt;logback的配置&lt;/h2&gt;
 
 &lt;p&gt;上面说了半天好像和printk的level级别没有太大差别，java的log系统最强大的地方在于它的可配置性。&lt;/p&gt;
 
 &lt;p&gt;如下面这个logback配置，可把ERROR及以上级别的打印输出到akka.log文件，同时把DEBUG及以上级别的打印输出到控制台。还可以配置输出格式，自动在log内容上附带一些上下文信息，如&lt;code&gt;%X{akkaSource}&lt;/code&gt;这个变量会解析为发起log的具体actor地址，这在系统上百万actor并发时，将成为跟踪问题重要线索。如果输出到日志文件，还可控制文件体积的最大值，选择原有内容是追加还是覆盖。&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-xml&quot; data-lang=&quot;xml&quot;&gt;&amp;lt;configuration&amp;gt;
-        &amp;lt;appender name=&amp;quot;FILE&amp;quot; class=&amp;quot;ch.qos.logback.core.FileAppender&amp;quot;&amp;gt;
-        &amp;lt;file&amp;gt;akka.log&amp;lt;/file&amp;gt;
-        &amp;lt;filter class=&amp;quot;ch.qos.logback.classic.filter.ThresholdFilter&amp;quot;&amp;gt;
-            &amp;lt;level&amp;gt;ERROR&amp;lt;/level&amp;gt;
-        &amp;lt;/filter&amp;gt;
-        &amp;lt;append&amp;gt;false&amp;lt;/append&amp;gt;
-        &amp;lt;!-- encoders are assigned the type
-             ch.qos.logback.classic.encoder.PatternLayoutEncoder by default --&amp;gt;
-        &amp;lt;encoder&amp;gt;
-            &amp;lt;!--&amp;lt;pattern&amp;gt;%date{ISO8601} %-5level %logger{36} %X{sourceThread} - %msg%n&amp;lt;/pattern&amp;gt;--&amp;gt;
-            &amp;lt;pattern&amp;gt;%date{ISO8601} %-5level %logger{36} %X{akkaSource} - %msg%n&amp;lt;/pattern&amp;gt;
-        &amp;lt;/encoder&amp;gt;
-    &amp;lt;/appender&amp;gt;
 
-        &amp;lt;appender name=&amp;quot;STDOUT&amp;quot; class=&amp;quot;ch.qos.logback.core.ConsoleAppender&amp;quot;&amp;gt;
-        &amp;lt;encoder&amp;gt;
-            &amp;lt;pattern&amp;gt;%date{ISO8601} %-5level %logger{36} %X{akkaSource} - %msg%n&amp;lt;/pattern&amp;gt;
-            &amp;lt;!--&amp;lt;pattern&amp;gt;%X{akkaTimestamp} %-5level %logger{36} %X{akkaSource} - %msg%n&amp;lt;/pattern&amp;gt;--&amp;gt;
-        &amp;lt;/encoder&amp;gt;
-    &amp;lt;/appender&amp;gt;
+&lt;p&gt;``` xml&lt;/p&gt;
+&lt;configuration&gt;
+        &lt;appender name=&quot;FILE&quot; class=&quot;ch.qos.logback.core.FileAppender&quot;&gt;
+        &lt;file&gt;akka.log&lt;/file&gt;
+        &lt;filter class=&quot;ch.qos.logback.classic.filter.ThresholdFilter&quot;&gt;
+            &lt;level&gt;ERROR&lt;/level&gt;
+        &lt;/filter&gt;
+        &lt;append&gt;false&lt;/append&gt;
+        &lt;!-- encoders are assigned the type
+             ch.qos.logback.classic.encoder.PatternLayoutEncoder by default --&gt;
+        &lt;encoder&gt;
+            &lt;!--&lt;pattern&gt;%date{ISO8601} %-5level %logger{36} %X{sourceThread} - %msg%n&lt;/pattern&gt;--&gt;
+            &lt;pattern&gt;%date{ISO8601} %-5level %logger{36} %X{akkaSource} - %msg%n&lt;/pattern&gt;
+        &lt;/encoder&gt;
+    &lt;/appender&gt;
 
-    &amp;lt;root level=&amp;quot;DEBUG&amp;quot;&amp;gt;
-        &amp;lt;appender-ref ref=&amp;quot;STDOUT&amp;quot; /&amp;gt;
-        &amp;lt;appender-ref ref=&amp;quot;FILE&amp;quot; /&amp;gt;
-    &amp;lt;/root&amp;gt;
-&amp;lt;/configuration&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+        &lt;appender name=&quot;STDOUT&quot; class=&quot;ch.qos.logback.core.ConsoleAppender&quot;&gt;
+        &lt;encoder&gt;
+            &lt;pattern&gt;%date{ISO8601} %-5level %logger{36} %X{akkaSource} - %msg%n&lt;/pattern&gt;
+            &lt;!--&lt;pattern&gt;%X{akkaTimestamp} %-5level %logger{36} %X{akkaSource} - %msg%n&lt;/pattern&gt;--&gt;
+        &lt;/encoder&gt;
+    &lt;/appender&gt;
+
+    &lt;root level=&quot;DEBUG&quot;&gt;
+        &lt;appender-ref ref=&quot;STDOUT&quot; /&gt;
+        &lt;appender-ref ref=&quot;FILE&quot; /&gt;
+    &lt;/root&gt;
+&lt;/configuration&gt;
+&lt;p&gt;```&lt;/p&gt;
+
 &lt;p&gt;日志的每种输出方式对应一个appender，除了上面用到的ConsoleAppender和FileAppender，还有通过网络发送日志到远程日志服务器的Appender，用户也可自定义appender，如日志云服务提供商loggly就有自己的&lt;a href=&quot;https://github.com/qos-ch/logback-extensions/wiki/Loggly&quot;&gt;Appender&lt;/a&gt;。分布式消息系统kafka也能通过&lt;a href=&quot;http://kafka.apache.org/07/quickstart.html&quot;&gt;Appender&lt;/a&gt;直接在某个topic上接收log日志。&lt;/p&gt;
 
 &lt;p&gt;更多语法参考：http://logback.qos.ch/manual/appenders.html&lt;/p&gt;
 
-&lt;p&gt;最后推荐一篇LinkedIn工程师关于日志的长文&lt;a href=&quot;https://engineering.linkedin.com/distributed-systems/log-what-every-software-engineer-should-know-about-real-time-datas-unifying&quot;&gt;The Log: What every software engineer should know about real-time data&amp;#39;s unifying abstraction&lt;/a&gt;，当然他说的日志已经超出了简单记录调试信息的范畴了，但其中一些观点很有意思，如数据库其实是一种特殊形式的日志，按照这个思路所谓大数据其实就是如何翻日志了，日志将是整个系统最重要的资产。&lt;/p&gt;
+&lt;p&gt;最后推荐一篇LinkedIn工程师关于日志的长文&lt;a href=&quot;https://engineering.linkedin.com/distributed-systems/log-what-every-software-engineer-should-know-about-real-time-datas-unifying&quot;&gt;The Log: What every software engineer should know about real-time data’s unifying abstraction&lt;/a&gt;，当然他说的日志已经超出了简单记录调试信息的范畴了，但其中一些观点很有意思，如数据库其实是一种特殊形式的日志，按照这个思路所谓大数据其实就是如何翻日志了，日志将是整个系统最重要的资产。&lt;/p&gt;
 
 &lt;p&gt;相关代码已提交&lt;a href=&quot;https://github.com/wuhx/akka-logging-example&quot;&gt;github&lt;/a&gt;, 欢迎fork交流。&lt;/p&gt;
 </description>

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!-- meta information -->
+<meta charset="utf-8">
+<meta name="description" 
+      content="* TOC{:toc}### 一：实现了什么在任何能够分享到微信的APP，把你正在阅读的文章分享给一个微信机器人好友（非公众号），就能推送到你的Kindle上。针对微信订阅号，知乎，简书，网易新闻，v2ex，github，stacko..." >
+<meta name="author" content="wuhx">
+
+<!-- Enable responsiveness on mobile devices-->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+<!-- title -->
+<title>微信你的Kindle：记录我的第一个Web项目 &middot; Not my idea</title>
+
+<!-- icons -->
+<link rel="shortcut icon" href="/public/images/favicon.ico" />
+
+<!-- stylesheets -->
+<link rel="stylesheet" href="/public/css/responsive.gs.12col.css">
+<link rel="stylesheet" href="/public/css/animate.min.css">
+<link rel="stylesheet" href="/public/css/main.css">
+
+<!-- Google fonts -->
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,400italic&subset=latin-ext">
+
+
+
+<!-- feed links -->
+<link rel="alternate" href="xun.im/feed.xml" type="application/rss+xml" title="">
+
+  </head>
+  <body>
+    <div class="container azul">
+      <header class="top row gutters">
+        <div class="col span_2 center">
+          <!-- TODO: add baseurl to the logo link -->
+          <a href="xun.im" id="logo" title="Not my idea"
+             style="background-image: url(/public/images/logo.png);"></a>
+        </div>
+        <nav class="col span_10 top-navbar">
+  
+  <a href="/" title="Home"
+     >Home</a>
+  
+  <a href="/about" title="About"
+     >About</a>
+  
+</nav>
+
+      </header>
+
+      <article class="single row gutters">
+  <time class="published" datetime="2015-07-19">19 July 2015</time>
+  <h2>微信你的Kindle：记录我的第一个Web项目</h2>
+
+  <ul id="markdown-toc">
+  <li><a href="#section" id="markdown-toc-section">一：实现了什么</a></li>
+  <li><a href="#section-1" id="markdown-toc-section-1">二：为什么要做这个</a></li>
+  <li><a href="#section-2" id="markdown-toc-section-2">三：用到的技术</a>    <ul>
+      <li><a href="#scalaakka" id="markdown-toc-scalaakka">1  关于Scala和Akka</a></li>
+      <li><a href="#section-3" id="markdown-toc-section-3">2  关于数据库</a></li>
+      <li><a href="#section-4" id="markdown-toc-section-4">3  关于爬虫</a>        <ul>
+          <li><a href="#section-5" id="markdown-toc-section-5">爬取网页类型</a></li>
+          <li><a href="#section-6" id="markdown-toc-section-6">文档的生成</a></li>
+        </ul>
+      </li>
+      <li><a href="#section-7" id="markdown-toc-section-7">4  关于微信机器人</a>        <ul>
+          <li><a href="#section-8" id="markdown-toc-section-8">功能：</a></li>
+          <li><a href="#section-9" id="markdown-toc-section-9">稳定性：</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li><a href="#section-10" id="markdown-toc-section-10">四： 总结</a>    <ul>
+      <li><a href="#section-11" id="markdown-toc-section-11">附：</a></li>
+    </ul>
+  </li>
+</ul>
+
+<h3 id="section">一：实现了什么</h3>
+
+<p>在任何能够分享到微信的APP，把你正在阅读的文章分享给一个微信机器人好友（非公众号），就能推送到你的Kindle上。</p>
+
+<p>针对微信订阅号，知乎，简书，网易新闻，v2ex，github，stackoverflow 等多个网站校正排版，提供更好的阅读体验和推送速度。</p>
+
+<p>亚马逊官方也有一个<a href="http://mp.weixin.qq.com/s?__biz=MzAxMTAzNDM2OQ==&amp;mid=203661957&amp;idx=1&amp;sn=92ff00865b49bc34d0cf4e853e678571#rd">服务号</a>提供类似的服务。</p>
+
+<p>相比之下我们的优势：</p>
+
+<ol>
+  <li>支持微信之外，从其他App分享。</li>
+  <li>亚马逊官方服务号对非微信公共平台（http://mp.weixin.qq.com）的文章排版支持不好</li>
+  <li>排版优化，生成的文档体积更小（平均每篇小三四百K），推送更快。</li>
+  <li>图片支持格式更多。如<a href="http://mp.weixin.qq.com/s?__biz=MjM5MDI1Nzk2MA==&amp;mid=208393099&amp;idx=3&amp;sn=c3d6960dde14d37eb37fc4536cfdf21f&amp;scene=1#rd">这篇文章</a> 的图片亚马逊官方服务号不支持，我们支持。</li>
+</ol>
+
+<h3 id="section-1">二：为什么要做这个</h3>
+
+<p>对个人知识获取来说，这是一个最好的时代，通过一台手机你就可以获取到人类几乎所有的知识，但信息爆炸的同时，也造成了信息的贬值。在手机上我只愿意做浏览性的阅读，一条八卦新闻和一篇有深度的文章都只能获取我相同的关注力，超过千字的文章，拇指就会开始有些不耐烦的加快滑动，更遑论停下来思考一下。</p>
+
+<p>kindle是一个伟大阅读工具，e-paper提供了最接近纸张的阅读体验。并且由于功能单一，更能让人专注于阅读。</p>
+
+<p>对我来说一个理想的阅读方式是：</p>
+
+<p>手机（或其他pad）做为一个信息源，快速浏览发现。需要进一步阅读的内容推送到kindle查看。</p>
+
+<h3 id="section-2">三：用到的技术</h3>
+
+<ul>
+  <li>主体架构：   Scala &amp; Akka</li>
+  <li>数据库：       ElasticSearch</li>
+  <li>爬虫：           Jsoup &amp; webdriver + phantomjs</li>
+  <li>邮件服务：   AWS Mail &amp; MailGun</li>
+  <li>日志和监控：Logstash+Kibana+ElasticSearch</li>
+  <li>微信机器人：webdriver + phantomjs + web微信</li>
+  <li>web前端:        github page + 七牛云CDN</li>
+</ul>
+
+<h4 id="scalaakka">1  关于Scala和Akka</h4>
+
+<p>neveread.com有三个模块组成，<code>微信机器人</code> <code>爬虫</code> <code>邮件服务</code>，他们通过<a href="http://doc.akka.io/docs/akka/snapshot/common/cluster.html">akka cluster</a>协作，由AKKA提供位置无关性，可以运行在一台服务器上，也可以创建多个实例分布在多台服务器上。</p>
+
+<p>在选择scala+akka之前考察过Erlang，非常喜欢这门语言，特别是它的<a href="http://erlang.org/doc/reference_manual/patterns.html">Pattern Matching</a>，<a href="http://www.erlang.org/doc/programming_examples/list_comprehensions.html">List Comprehensions</a> 让我大开眼界，以及OTP中的Actor概念。但最终放弃是因为几个缺点（我认为的）：</p>
+
+<ol>
+  <li>小众语言，生态系统弱。</li>
+  <li>IDE支持不好。</li>
+  <li>ErlangVM的性能弱。</li>
+  <li>语法简单，但过于简单。</li>
+  <li>非类型安全。</li>
+</ol>
+
+<p>Scala/Akka在复制了Erlang的OTP框架之外，正好弥补了这些缺点。</p>
+
+<ol>
+  <li>JVM的生态系统</li>
+  <li>Intellj官方插件</li>
+  <li>JVM的性能</li>
+  <li>语法足够复杂，同时支持OOP和函数式。</li>
+  <li>类型安全</li>
+</ol>
+
+<p>作为一个从C语言转过来的人，编程思维方式的转变是个有趣的过程。之前对并发的理解多在用多线程同时解决某个问题，然后在各个线程中疲于同步各种变量的值（加锁，解锁），akka推崇的是状态分离（actor之间只能通过message交换信息），甚至消除可变状态（鼓励用val定义不可变变量，不用var定义可变变量），这些道理一开始的时候都懂，但写出来的代码，回头一看，其实就是裹着actor外衣的线程。</p>
+
+<p>总结出一个结论：akka中一个actor的成本是极低的<a href="http://doc.akka.io/docs/akka/snapshot/general/actor-systems.html#What_you_should_not_concern_yourself_with">（内存占用300个字节）</a>，远低于一个操作系统线程（几M栈空间），所以，actor和线程的使用模式有一个明显的不同，如果你的系统中始终只有少数几个Actor在包揽所有的工作，那就需要检查一下你对Actor的用法了。</p>
+
+<h4 id="section-3">2  关于数据库</h4>
+
+<p>ElasticSearch不是严格意义上的数据库，至少拿来做主数据库属于非典型应用。选中它主要是由于：</p>
+
+<ol>
+  <li>在JVM生态系统内。只需添加一行sbt依赖，就能用代码直接起一个ES数据库实例，完全不需要外部依赖，非常方便。</li>
+  <li>完善的REST接口。能够接收任意POST过来的Json文档，自动生成对应的scheme，并存储文档。</li>
+  <li>文档友好，并且自动支持搜索。</li>
+  <li>分布式。</li>
+</ol>
+
+<p>ElasticSearch默认是作为一个独立进程运行在专门供它使用的服务器上，对内存需求很大，在我1g内存的还跑着其他进程的小服务器上，经常会内存不够，引发GC，整个JVM世界都不好了。</p>
+
+<p>针对我的特殊需求单独做了调整：</p>
+
+<ol>
+  <li>数据量小（至少目前），调整ES_HEAP_SIZE到一个较小的值。</li>
+  <li>部分数据（web微信 的session）只对本机的进程有用，无需同步到集群。设置session index的shards=1 replicas=0，以减小存储消耗。</li>
+  <li>新session开启后，老的session数据就没用了，可以直接close，释放内存。</li>
+</ol>
+
+<p>虽然把embedded的ElasticSearch实例用在生产环境有点让人不太人放心，但embedded ES还有一个额外的好处：
+所有的配置都可动态编程配置。比如检测内网IP，自动将es绑定到内网，防止疏忽导致信息泄漏到外网。通过Akka cluster集群的event消息，动态配置ElasticSearch集群。</p>
+
+<h4 id="section-4">3  关于爬虫</h4>
+
+<h5 id="section-5">爬取网页类型</h5>
+
+<p>需要采集的网页有两种情形：</p>
+
+<ol>
+  <li>直接返回静态的HTML页面。</li>
+  <li>只返回一个HTML页面框架，内容由javascript动态获取后添加。</li>
+</ol>
+
+<p>第一种情形，也是绝大部分网页的情况，只需设置合理的User-Agent和Referer即可直接用Jsoup采集。</p>
+
+<p>第二种情况，如网易客户端，evernotes等，复杂一点，有两种处理方法：</p>
+
+<p>a）用webdriver驱动浏览器执行javascript获取内容，这种方法通用性好，但比较耗资源。</p>
+
+<p>b）分析javascript加载内容的模式，用代码模拟抓取内容。</p>
+
+<h5 id="section-6">文档的生成</h5>
+
+<p>文档有两种方式生成：</p>
+
+<ol>
+  <li>通过识别网页内容（包括文章主体，用户评论），用jsoup提取出来，插入到一个模板文档中，这种方式生成的文档排版更干净，并且由于不用爬取不必要的图片和内容，生成的体积更小，爬取速度也更快。</li>
+  <li>对于内容识别失败的网页，先用jsoup clean一遍（去掉javascript代码，统一UTF8编码等）后，保留原有样式投递。</li>
+</ol>
+
+<p>这两种情况，图片都会被重新编码成base64格式内嵌到网页中，由于base64编码效率比较低，编码后的数据普遍比原图大几倍，目前的规则是超过150K的图片，不重新编码，而是提供一个链接供用户在阅读时点击。</p>
+
+<h4 id="section-7">4  关于微信机器人</h4>
+
+<p>通过webdriver + phantmjs 上运行web微信实现。</p>
+
+<h5 id="section-8">功能：</h5>
+
+<ol>
+  <li>接收好友消息，检测内容，并回复。</li>
+  <li>提取用户分享的网址</li>
+  <li>接收好友验证消息，根据验证码决定是否通过验证.</li>
+</ol>
+
+<p>碰到的一个坑是正好遇上<a href="https://twitter.com/mienflying/status/598700471126085632">web微信改版</a>，本地测试无论用chrome驱动还是phantomjs驱动都没有问题，deploy到服务器则有时OK，有时失败，没有规律。</p>
+
+<p>现在的代码会检测web微信版本，同时支持目前的两个版本。</p>
+
+<h5 id="section-9">稳定性：</h5>
+
+<p>微信机器人是最早实现的模块，断断续续跑了几个月，偶尔掉线过几次，为此专门创建了一个状态监控的Actor，一旦检测到掉线就会触发Akka的supervisor策略自动重启，并用Twilio发出电话通知。</p>
+
+<p>压力测试模拟过瞬间收到100条交替不同用户的消息，能够一一回复，只是延时会大一点。为了防止消息发送太快，每条消息间设置了0-1秒的延时，消息队列使用PriorityQueue实现，保证重要消息的优先级。</p>
+
+<h3 id="section-10">四： 总结</h3>
+
+<p>neveread.com是我第一个web项目，作为一个前BSP驱动码农，处处要学，费力自不必提，但那种看到一个程序从无到有的运行起来，只要拿起手机无时无地都能和你互动的成就感，是在一个大公司编写模块代码无法获取到的。</p>
+
+<h4 id="section-11">附：</h4>
+
+<ol>
+  <li>
+    <p><a href="http://neveread.com/">http://neveread.com/</a></p>
+  </li>
+  <li>
+    <p><a href="http://mp.weixin.qq.com/s?__biz=MzI2MDAxNzMzMg%3D%3D&amp;mid=208689533&amp;idx=1&amp;sn=59368c84e0b2060aaba1e3ca9da0c550&amp;scene=1&amp;key=c76941211a49ab58a303ed91f93a38d9d39196ac3f9ab0641f3be3b436315ca17bf3f505967d92a432977d732764e6a1&amp;ascene=1&amp;uin=MTYwNDMxMTUwNg%253D%253D">帮助文档</a></p>
+  </li>
+  <li>
+    <p>微信机器人1: 文字鲨（验证码请邮件pm@kindle.pm）</p>
+  </li>
+</ol>
+
+<p><img src="http://7u2pdt.com1.z0.glb.clouddn.com/robot-sha.jpeg" alt="文字鲨" /></p>
+
+
+	
+	<!-- duoshuo box -->
+	<div class="ds-thread" data-thread-key="/2015/07/19/weixin-robot-vs-kindle" data-title="微信你的Kindle：记录我的第一个Web项目" data-url="xun.im/2015/07/19/weixin-robot-vs-kindle/"></div>
+	<!-- duoshuo box end -->
+	
+</article>
+
+
+      <footer>
+        <p>
+          This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-nd/2.5/deed.zh">署名-非商业性使用-禁止演绎 </a>License.
+        </p>
+      </footer>
+    </div>
+
+    <!-- scripts -->
+	<link rel="stylesheet" href="/public/css/tomorrow.css">
+	<script src="/public/js/highlight.pack.js"></script>
+	<script>hljs.initHighlightingOnLoad();</script>
+	
+    <script src="/public/js/jquery.min.js"></script>
+    <script src="/public/js/jquery.fitvids.js"></script>
+    <script>
+      $(document).ready(function(){
+        $("article").fitVids();
+      });
+    </script>
+		
+		<!-- google analystics for xun.im -->
+		<script>
+		  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+		  ga('create', 'UA-61979906-1', 'auto');
+		  ga('send', 'pageview');
+		</script>
+		<!-- baidu site for xun.im -->
+		<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "//hm.baidu.com/hm.js?b62786d99652b034add78b003086816f";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+		</script>
+		<!-- duoshuo common -->
+		<script type="text/javascript">
+		var duoshuoQuery = {short_name:"5site"};
+			(function() {
+				var ds = document.createElement('script');
+				ds.type = 'text/javascript';ds.async = true;
+				ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+				ds.charset = 'UTF-8';
+				(document.getElementsByTagName('head')[0] 
+				 || document.getElementsByTagName('body')[0]).appendChild(ds);
+			})();
+			</script>
+		<!-- duoshuo end -->
+		
+		
+  </body>
+</html>

@@ -61,88 +61,106 @@
 <p>akka日志功能是基于slf4j构建的。对于不熟悉java的人，slf4j，log4j，logback等基本上是这样一个关系：SLF4J是一套log接口，java.util.logging, logback, log4j等是具体的实现，而logback已逐渐取代log4j成为事实标准。</p>
 
 <p>所以要使用akka的日志，除了akka-slf4j还需增加logback依赖。</p>
-<div class="highlight"><pre><code class="language-scala" data-lang="scala">libraryDependencies ++= Seq(
-  &quot;com.typesafe.akka&quot; %% &quot;akka-actor&quot; % akkaVersion,
-  &quot;com.typesafe.akka&quot; %% &quot;akka-contrib&quot; % akkaVersion,
-  &quot;com.typesafe.akka&quot; %% &quot;akka-testkit&quot; % akkaVersion,
-  &quot;com.typesafe.akka&quot; %% &quot;akka-slf4j&quot; % akkaVersion,
-  &quot;org.scalatest&quot; %% &quot;scalatest&quot; % &quot;2.2.4&quot; % &quot;test&quot;,
-  &quot;ch.qos.logback&quot; % &quot;logback-classic&quot; % &quot;1.1.3&quot;,
-  &quot;commons-io&quot; % &quot;commons-io&quot; % &quot;2.4&quot; % &quot;test&quot;)
-</code></pre></div>
-<h2>actor系统中记录日志的三种方法</h2>
 
-<h3>1 通过ActorLogging记录日志</h3>
+<p><code>scala
+libraryDependencies ++= Seq(
+  "com.typesafe.akka" %% "akka-actor" % akkaVersion,
+  "com.typesafe.akka" %% "akka-contrib" % akkaVersion,
+  "com.typesafe.akka" %% "akka-testkit" % akkaVersion,
+  "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
+  "org.scalatest" %% "scalatest" % "2.2.4" % "test",
+  "ch.qos.logback" % "logback-classic" % "1.1.3",
+  "commons-io" % "commons-io" % "2.4" % "test")
+</code></p>
+
+<h2 id="actor">actor系统中记录日志的三种方法</h2>
+
+<h3 id="actorlogging">1 通过ActorLogging记录日志</h3>
 
 <p>akka提供了ActorLogging这个trait，方便在actor中记录日志。</p>
-<div class="highlight"><pre><code class="language-scala" data-lang="scala">class MasterActor extends Actor with akka.actor.ActorLogging{
+
+<p><code>scala
+class MasterActor extends Actor with akka.actor.ActorLogging{
   def receive = {
     case _ =&gt;
-     log.debug(&quot;debug log&quot;)
-     log.info(&quot;info log&quot;)
-     log.warning(&quot;warning log&quot;)
-     log.error(&quot;error log&quot;)
+     log.debug("debug log")
+     log.info("info log")
+     log.warning("warning log")
+     log.error("error log")
   }
 }
-</code></pre></div>
-<h3>2 通过akka.event.Logging记录日志　</h3>
+</code></p>
+
+<h3 id="akkaeventlogging">2 通过akka.event.Logging记录日志　</h3>
 
 <p>ActorLogging这个trait只能mix到Actor类上。</p>
 
 <p>在其他非actor类上，如果能访问到actor系统，可利用它的event stream进行log。</p>
-<div class="highlight"><pre><code class="language-scala" data-lang="scala">import akka.event.Logging
-val log = Logging(system.eventStream, &quot;log prefix:&quot;)
-log.debug(&quot;debug log&quot;)
-</code></pre></div>
+
+<p><code>scala
+import akka.event.Logging
+val log = Logging(system.eventStream, "log prefix:")
+log.debug("debug log")
+</code></p>
+
 <p>也可直接使用ActorSystem内置的LoggingAdapter。</p>
-<div class="highlight"><pre><code class="language-scala" data-lang="scala">val system = akka.actor.ActorSystem()
-system.log.error(&quot;log from ActorSystem&quot;)
-</code></pre></div>
-<h3>3 直接通过slf4j访问logback记录日志</h3>
-<div class="highlight"><pre><code class="language-scala" data-lang="scala">import org.slf4j.LoggerFactory
+
+<p><code>scala
+val system = akka.actor.ActorSystem()
+system.log.error("log from ActorSystem")
+</code></p>
+
+<h3 id="slf4jlogback">3 直接通过slf4j访问logback记录日志</h3>
+
+<p><code>scala
+import org.slf4j.LoggerFactory
 val log = LoggerFactory.getLogger(getClass)
-log.debug(&quot;Hello Logger!&quot;)
-</code></pre></div>
+log.debug("Hello Logger!")
+</code></p>
+
 <p>这3种log方式因为用的都是同一个logback实例，所以输出是统一的，区别是akka提供的log接口能够在记录时自动带上actor地址等信息，能极大的方便定位问题。</p>
 
-<h2>logback的配置</h2>
+<h2 id="logback">logback的配置</h2>
 
 <p>上面说了半天好像和printk的level级别没有太大差别，java的log系统最强大的地方在于它的可配置性。</p>
 
 <p>如下面这个logback配置，可把ERROR及以上级别的打印输出到akka.log文件，同时把DEBUG及以上级别的打印输出到控制台。还可以配置输出格式，自动在log内容上附带一些上下文信息，如<code>%X{akkaSource}</code>这个变量会解析为发起log的具体actor地址，这在系统上百万actor并发时，将成为跟踪问题重要线索。如果输出到日志文件，还可控制文件体积的最大值，选择原有内容是追加还是覆盖。</p>
-<div class="highlight"><pre><code class="language-xml" data-lang="xml">&lt;configuration&gt;
-        &lt;appender name=&quot;FILE&quot; class=&quot;ch.qos.logback.core.FileAppender&quot;&gt;
-        &lt;file&gt;akka.log&lt;/file&gt;
-        &lt;filter class=&quot;ch.qos.logback.classic.filter.ThresholdFilter&quot;&gt;
-            &lt;level&gt;ERROR&lt;/level&gt;
-        &lt;/filter&gt;
-        &lt;append&gt;false&lt;/append&gt;
-        &lt;!-- encoders are assigned the type
-             ch.qos.logback.classic.encoder.PatternLayoutEncoder by default --&gt;
-        &lt;encoder&gt;
-            &lt;!--&lt;pattern&gt;%date{ISO8601} %-5level %logger{36} %X{sourceThread} - %msg%n&lt;/pattern&gt;--&gt;
-            &lt;pattern&gt;%date{ISO8601} %-5level %logger{36} %X{akkaSource} - %msg%n&lt;/pattern&gt;
-        &lt;/encoder&gt;
-    &lt;/appender&gt;
 
-        &lt;appender name=&quot;STDOUT&quot; class=&quot;ch.qos.logback.core.ConsoleAppender&quot;&gt;
-        &lt;encoder&gt;
-            &lt;pattern&gt;%date{ISO8601} %-5level %logger{36} %X{akkaSource} - %msg%n&lt;/pattern&gt;
-            &lt;!--&lt;pattern&gt;%X{akkaTimestamp} %-5level %logger{36} %X{akkaSource} - %msg%n&lt;/pattern&gt;--&gt;
-        &lt;/encoder&gt;
-    &lt;/appender&gt;
+<p>``` xml</p>
+<configuration>
+        <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>akka.log</file>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+        <append>false</append>
+        <!-- encoders are assigned the type
+             ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
+        <encoder>
+            <!--<pattern>%date{ISO8601} %-5level %logger{36} %X{sourceThread} - %msg%n</pattern>-->
+            <pattern>%date{ISO8601} %-5level %logger{36} %X{akkaSource} - %msg%n</pattern>
+        </encoder>
+    </appender>
 
-    &lt;root level=&quot;DEBUG&quot;&gt;
-        &lt;appender-ref ref=&quot;STDOUT&quot; /&gt;
-        &lt;appender-ref ref=&quot;FILE&quot; /&gt;
-    &lt;/root&gt;
-&lt;/configuration&gt;
-</code></pre></div>
+        <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%date{ISO8601} %-5level %logger{36} %X{akkaSource} - %msg%n</pattern>
+            <!--<pattern>%X{akkaTimestamp} %-5level %logger{36} %X{akkaSource} - %msg%n</pattern>-->
+        </encoder>
+    </appender>
+
+    <root level="DEBUG">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="FILE" />
+    </root>
+</configuration>
+<p>```</p>
+
 <p>日志的每种输出方式对应一个appender，除了上面用到的ConsoleAppender和FileAppender，还有通过网络发送日志到远程日志服务器的Appender，用户也可自定义appender，如日志云服务提供商loggly就有自己的<a href="https://github.com/qos-ch/logback-extensions/wiki/Loggly">Appender</a>。分布式消息系统kafka也能通过<a href="http://kafka.apache.org/07/quickstart.html">Appender</a>直接在某个topic上接收log日志。</p>
 
 <p>更多语法参考：http://logback.qos.ch/manual/appenders.html</p>
 
-<p>最后推荐一篇LinkedIn工程师关于日志的长文<a href="https://engineering.linkedin.com/distributed-systems/log-what-every-software-engineer-should-know-about-real-time-datas-unifying">The Log: What every software engineer should know about real-time data&#39;s unifying abstraction</a>，当然他说的日志已经超出了简单记录调试信息的范畴了，但其中一些观点很有意思，如数据库其实是一种特殊形式的日志，按照这个思路所谓大数据其实就是如何翻日志了，日志将是整个系统最重要的资产。</p>
+<p>最后推荐一篇LinkedIn工程师关于日志的长文<a href="https://engineering.linkedin.com/distributed-systems/log-what-every-software-engineer-should-know-about-real-time-datas-unifying">The Log: What every software engineer should know about real-time data’s unifying abstraction</a>，当然他说的日志已经超出了简单记录调试信息的范畴了，但其中一些观点很有意思，如数据库其实是一种特殊形式的日志，按照这个思路所谓大数据其实就是如何翻日志了，日志将是整个系统最重要的资产。</p>
 
 <p>相关代码已提交<a href="https://github.com/wuhx/akka-logging-example">github</a>, 欢迎fork交流。</p>
 
