@@ -6,8 +6,8 @@
     <atom:link href="xun.im/feed.xml" rel="self" type="application/rss+xml" />
     <description>personal blog, scala, akka,</description>
     <language>en-us</language>
-    <pubDate>Mon, 24 Aug 2015 16:05:24 +0800</pubDate>
-    <lastBuildDate>Mon, 24 Aug 2015 16:05:24 +0800</lastBuildDate>
+    <pubDate>Mon, 24 Aug 2015 19:45:24 +0800</pubDate>
+    <lastBuildDate>Mon, 24 Aug 2015 19:45:24 +0800</lastBuildDate>
 
     
       <item>
@@ -15,7 +15,7 @@
         <link>xun.im/2015/08/24/weixin-robot-vs-kindle-2.0/</link>
         <pubDate>Mon, 24 Aug 2015 00:00:00 +0800</pubDate>
         <author>wuhx</author>
-        <description>&lt;p&gt;&lt;a href=&quot;http://127.0.0.1:4000/2015/07/19/weixin-robot-vs-kindle/&quot;&gt;这次改版&lt;/a&gt;的主要目的是让neveread成为一个稳定能长期运行的服务，去掉第一版中一些试验性的功能。&lt;/p&gt;
+        <description>&lt;p&gt;&lt;a href=&quot;http://xun.im/2015/07/19/weixin-robot-vs-kindle/&quot;&gt;这次改版&lt;/a&gt;的主要目的是让neveread成为一个稳定能长期运行的服务，去掉第一版中一些试验性的功能。&lt;/p&gt;
 
 &lt;p&gt;&lt;strong&gt;主要的改动：&lt;/strong&gt;&lt;/p&gt;
 
