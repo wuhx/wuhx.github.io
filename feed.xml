@@ -6,9 +6,79 @@
     <atom:link href="xun.im/feed.xml" rel="self" type="application/rss+xml" />
     <description>personal blog, scala, akka,</description>
     <language>en-us</language>
-    <pubDate>Sun, 19 Jul 2015 23:53:38 +0800</pubDate>
-    <lastBuildDate>Sun, 19 Jul 2015 23:53:38 +0800</lastBuildDate>
+    <pubDate>Mon, 24 Aug 2015 16:05:24 +0800</pubDate>
+    <lastBuildDate>Mon, 24 Aug 2015 16:05:24 +0800</lastBuildDate>
 
+    
+      <item>
+        <title>微信你的kindle V2.0</title>
+        <link>xun.im/2015/08/24/weixin-robot-vs-kindle-2.0/</link>
+        <pubDate>Mon, 24 Aug 2015 00:00:00 +0800</pubDate>
+        <author>wuhx</author>
+        <description>&lt;p&gt;&lt;a href=&quot;http://127.0.0.1:4000/2015/07/19/weixin-robot-vs-kindle/&quot;&gt;这次改版&lt;/a&gt;的主要目的是让neveread成为一个稳定能长期运行的服务，去掉第一版中一些试验性的功能。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;主要的改动：&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;主数据库从ElasticSearch换成Slick+H2。&lt;/li&gt;
+  &lt;li&gt;微信机器人模块完全独立出来，通过Rest API和主数据库交互。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;原有构架中，每个模块（微信机器人，蜘蛛，邮件）都在同一个Akka Cluster中，并自带一个ElasticSearch数据库本地实例，数据的读写操作都针对这个本地数据库，数据同步交由Elastic集群完成，完全无需关注其他模块的存在。 这个方案的最大优势是可扩展性，能够非常方便的增加模块实例，提高整个系统的吞吐。但缺点也很明显：对于Neveread这样一个小系统，这一套东西太overkill了，并且ElasticSearch数据库的管理能力较弱，不便于引入复杂一点的数据操作。改版后，neveread的服务器从阿里云1G内存迁移到了DigitalOcean 512M内存的VM，并通过了相同强度的压力测试。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;细节改动：&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;去掉了自动好友验证功能。&lt;/li&gt;
+  &lt;li&gt;去掉了邮箱全文投递功能。&lt;/li&gt;
+  &lt;li&gt;引入基于用户的优先级投递功能。&lt;/li&gt;
+  &lt;li&gt;增加微信机器人的功能。如：替用户投递文章，绑定邮箱，自动抓取关注的订阅号新发布的文章。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;和第一版一样，这次升级也是一次新技术的学习过程，其中有很多有意思的事情，如函数式数据库操作（FRM）库&lt;a href=&quot;slick.typesafe.com&quot;&gt;Slick&lt;/a&gt;的引入。重新设计了微信机器人消息收发模块，通过无状态的Actor消除缓存需求。大量使用&lt;a href=&quot;http://docs.scala-lang.org/overviews/core/futures.html&quot;&gt;Future&lt;/a&gt;，让整个系统全异步执行。这里先说说基于用户的优先级投递功能。&lt;/p&gt;
+
+&lt;h5 id=&quot;section&quot;&gt;优先级投递功能&lt;/h5&gt;
+
+&lt;p&gt;为了更加友好的使用微信机器人：），系统中人为的把每条微信消息的发送间隔增加的1秒以上，这样消息发送模块很容易成为整个系统的瓶颈，导致无法及时处理用户消息。因此需要引入优先级来保证服务质量。&lt;/p&gt;
+
+&lt;p&gt;第一版中，每种消息类型有一个优先级，如绑定消息的优先级比其他消息要高，改版后优先级会同时由消息类型优先级和动态调整的用户优先级共同决定。&lt;/p&gt;
+
+&lt;p&gt;优先级投递功能主要解决的问题是：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;优先级高的用户的消息优先投递。&lt;/li&gt;
+  &lt;li&gt;优先级高的消息类型的消息优先投递。&lt;/li&gt;
+  &lt;li&gt;确保优先级低的用户的消息也有机会投递。&lt;/li&gt;
+  &lt;li&gt;大量发送消息的用户优先级迅速降低，防止恶意使用。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;strong&gt;具体算法：&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;每个用户都有一个优先级基数。用户每发送一条消息，该基数都会自动减1，每条消息的优先级由该基数和消息类型优先级共同构成，并被放入一个优先级队列中，按序投递。如果队列中消息数量超过一定阀值，最低优先级的消息会被直接丢弃。用户优先级基数会定时重置。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;实现的效果：&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;假设A用户优先级为60，B用户优先级为50，普通消息优先级为0，命令消息优先级为10.&lt;/p&gt;
+
+&lt;p&gt;满负荷情况下，A发送10条普通消息后，B发送的普通消息才会被投递，但如果B发送的是命令消息，该消息也会被立刻投递。A如果继续按照2 msg/sec的速度发送消息，而B按照 1 msg/sec的消息发送消息，则后续B的消息都会被优先投递，直到下一次优先级基数重置。&lt;/p&gt;
+
+&lt;p&gt;目前系统设置中，新注册的用户优先级基数默认为50，而上一个版本中已绑定的用户按60优先级基数导入到新版本中。&lt;/p&gt;
+
+&lt;p&gt;发送「&lt;strong&gt;设置&lt;/strong&gt;」微信消息给文字鲨看看你的优先级吧！&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;附：&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://slick.typesafe.com/doc/3.0.0/orm-to-slick.html&quot;&gt;Slick文档FRM VS ORM&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://xun.im/2015/07/19/weixin-robot-vs-kindle/&quot;&gt;微信你的Kindle：记录我的第一个Web项目&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://neveread.com&quot;&gt;不读：构建你万年图书馆&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;以及：打酱油的公众号&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://7u2pdt.com1.z0.glb.clouddn.com/nevereadqr.jpg&quot; alt=&quot;公众号&quot; /&gt;&lt;/p&gt;
+</description>
+      </item>
     
       <item>
         <title>微信你的Kindle：记录我的第一个Web项目</title>
