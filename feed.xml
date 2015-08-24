@@ -6,8 +6,8 @@
     <atom:link href="xun.im/feed.xml" rel="self" type="application/rss+xml" />
     <description>personal blog, scala, akka,</description>
     <language>en-us</language>
-    <pubDate>Mon, 24 Aug 2015 19:45:24 +0800</pubDate>
-    <lastBuildDate>Mon, 24 Aug 2015 19:45:24 +0800</lastBuildDate>
+    <pubDate>Mon, 24 Aug 2015 19:52:38 +0800</pubDate>
+    <lastBuildDate>Mon, 24 Aug 2015 19:52:38 +0800</lastBuildDate>
 
     
       <item>
@@ -35,7 +35,7 @@
   &lt;li&gt;增加微信机器人的功能。如：替用户投递文章，绑定邮箱，自动抓取关注的订阅号新发布的文章。&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;p&gt;和第一版一样，这次升级也是一次新技术的学习过程，其中有很多有意思的事情，如函数式数据库操作（FRM）库&lt;a href=&quot;slick.typesafe.com&quot;&gt;Slick&lt;/a&gt;的引入。重新设计了微信机器人消息收发模块，通过无状态的Actor消除缓存需求。大量使用&lt;a href=&quot;http://docs.scala-lang.org/overviews/core/futures.html&quot;&gt;Future&lt;/a&gt;，让整个系统全异步执行。这里先说说基于用户的优先级投递功能。&lt;/p&gt;
+&lt;p&gt;和第一版一样，这次升级也是一次新技术的学习过程，其中有很多有意思的事情，如函数式数据库操作（FRM）库&lt;a href=&quot;http://slick.typesafe.com&quot;&gt;Slick&lt;/a&gt;的引入。重新设计了微信机器人消息收发模块，通过无状态的Actor消除缓存需求。大量使用&lt;a href=&quot;http://docs.scala-lang.org/overviews/core/futures.html&quot;&gt;Future&lt;/a&gt;，让整个系统全异步执行。这里先说说基于用户的优先级投递功能。&lt;/p&gt;
 
 &lt;h5 id=&quot;section&quot;&gt;优先级投递功能&lt;/h5&gt;
 
