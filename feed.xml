@@ -6,8 +6,8 @@
     <atom:link href="xun.im/feed.xml" rel="self" type="application/rss+xml" />
     <description>personal blog, scala, akka,</description>
     <language>en-us</language>
-    <pubDate>Wed, 26 Aug 2015 21:56:39 +0800</pubDate>
-    <lastBuildDate>Wed, 26 Aug 2015 21:56:39 +0800</lastBuildDate>
+    <pubDate>Wed, 26 Aug 2015 22:39:00 +0800</pubDate>
+    <lastBuildDate>Wed, 26 Aug 2015 22:39:00 +0800</lastBuildDate>
 
     
       <item>
@@ -271,7 +271,7 @@ res6: Option[Int] = Some(76576500)
         <link>xun.im/2015/08/24/weixin-robot-vs-kindle-2.0/</link>
         <pubDate>Mon, 24 Aug 2015 00:00:00 +0800</pubDate>
         <author>wuhx</author>
-        <description>&lt;p&gt;这次改版的主要目的是让neveread成为一个稳定能长期运行的服务，去掉&lt;a href=&quot;http://xun.im/2015/07/19/weixin-robot-vs-kindle/&quot;&gt;第一版&lt;/a&gt;中一些试验性的功能。&lt;/p&gt;
+        <description>&lt;p&gt;这次改版的主要目的是让&lt;a href=&quot;http://neveread.com&quot;&gt;不读&lt;/a&gt;成为一个稳定能长期运行的服务，去掉&lt;a href=&quot;http://xun.im/2015/07/19/weixin-robot-vs-kindle/&quot;&gt;第一版&lt;/a&gt;中一些试验性的功能。&lt;/p&gt;
 
 &lt;p&gt;&lt;strong&gt;主要的改动：&lt;/strong&gt;&lt;/p&gt;
 
