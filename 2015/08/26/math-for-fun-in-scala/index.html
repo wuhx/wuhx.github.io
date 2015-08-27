@@ -4,7 +4,7 @@
     <!-- meta information -->
 <meta charset="utf-8">
 <meta name="description" 
-      content="#### 缘起刚用Scala做了一个像样的[项目](http://xun.im/2015/08/24/weixin-robot-vs-kindle-2.0/)，对Scala热情满满，无事时用它做了几题Project Euler， 发现..." >
+      content="### 缘起刚用Scala做了一个像样的[项目](http://xun.im/2015/08/24/weixin-robot-vs-kindle-2.0/)，对Scala热情满满，无事时用它做了几题Project Euler， 发现S..." >
 <meta name="author" content="wuhx">
 
 <!-- Enable responsiveness on mobile devices-->
@@ -54,11 +54,13 @@
   <time class="published" datetime="2015-08-26">26 August 2015</time>
   <h2>数学的乐趣：Scala和Project Euler</h2>
 
-  <h4 id="section">缘起</h4>
+  <h3 id="section">缘起</h3>
 
 <p>刚用Scala做了一个像样的<a href="http://xun.im/2015/08/24/weixin-robot-vs-kindle-2.0/">项目</a>，对Scala热情满满，无事时用它做了几题Project Euler， 发现Scala非常适合这个，写一点心得，希望抛砖引玉，能有更多的人喜欢上Scala这门语言。</p>
 
-<h3 id="section-1">从第12题说起</h3>
+<h3 id="section-1">欧拉工程</h3>
+
+<p>从第12题说起：</p>
 
 <p>Problem 12 ：<a href="http://projecteuler.net/index.php?section=problems&amp;id=12">Highly divisible triangular number</a></p>
 
@@ -248,13 +250,13 @@ res24: Option[Int] = Some(76576500)
 
 <p>其中n为任意整数，p1-ps为素数。</p>
 
-<p>如，4200可以表示成：</p>
+<p><strong>如，4200可以表示成：</strong></p>
 
 <script type="math/tex; mode=display">4200 = 2^{3}3^{1}5^{2}7^1</script>
 
 <p>所以4200有 (3+1)(1+1)(2+1)(1+1) = 48个因子。</p>
 
-<p>而triangle数可以表示为：</p>
+<p><strong>而triangle数可以表示为：</strong></p>
 
 <script type="math/tex; mode=display">triangles(n)=1+2+\cdots+n=\sum_{i=1}^n=\frac{n(n+1)}{2}.</script>
 
@@ -263,26 +265,29 @@ res24: Option[Int] = Some(76576500)
 <h4 id="section-10">代码实现</h4>
 
 <div class="highlighter-rouge"><pre class="highlight"><code><span class="cm">/*
-* 计算number的因子个数，排除一次2因子
+* 计算n的因子个数，排除一次2因子
 * */</span>
-<span class="k">def</span> <span class="n">dns</span><span class="o">(</span><span class="n">number</span><span class="k">:</span> <span class="kt">Int</span><span class="o">,</span> <span class="n">sum</span><span class="k">:</span> <span class="kt">Int</span><span class="o">,</span> <span class="n">primes</span><span class="k">:</span> <span class="kt">Stream</span><span class="o">[</span><span class="kt">Int</span><span class="o">])</span><span class="k">:</span> <span class="kt">Int</span> <span class="o">=</span> <span class="n">primes</span> <span class="k">match</span> <span class="o">{</span>
-  <span class="k">case</span> <span class="n">head</span> <span class="o">#::</span> <span class="n">tail</span> <span class="k">if</span> <span class="n">head</span> <span class="o">&gt;</span> <span class="n">number</span> <span class="k">=&gt;</span> <span class="n">sum</span>
+<span class="k">def</span> <span class="n">divisisorNumbers</span><span class="o">(</span><span class="n">n</span><span class="k">:</span> <span class="kt">Int</span><span class="o">,</span> <span class="n">sum</span><span class="k">:</span> <span class="kt">Int</span><span class="o">,</span> <span class="n">primes</span><span class="k">:</span> <span class="kt">Stream</span><span class="o">[</span><span class="kt">Int</span><span class="o">])</span>
+  <span class="k">:</span> <span class="kt">Int</span> <span class="o">=</span> <span class="n">primes</span> <span class="k">match</span> <span class="o">{</span>
+  <span class="k">case</span> <span class="n">head</span> <span class="o">#::</span> <span class="n">tail</span> <span class="k">if</span> <span class="n">head</span> <span class="o">&gt;</span> <span class="n">n</span> <span class="k">=&gt;</span> <span class="n">sum</span>
   <span class="k">case</span> <span class="n">prime</span> <span class="o">#::</span> <span class="n">tail</span> <span class="k">=&gt;</span>
-    <span class="k">var</span> <span class="n">n</span> <span class="k">=</span> <span class="n">number</span>
+    <span class="k">var</span> <span class="n">number</span> <span class="k">=</span> <span class="n">n</span>
     <span class="k">var</span> <span class="n">count</span> <span class="k">=</span> <span class="mi">0</span>
-    <span class="k">while</span> <span class="o">(</span><span class="n">n</span> <span class="o">%</span> <span class="n">prime</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
-      <span class="n">n</span> <span class="k">=</span> <span class="n">n</span> <span class="o">/</span> <span class="n">prime</span>
+    <span class="k">while</span> <span class="o">(</span><span class="n">number</span> <span class="o">%</span> <span class="n">prime</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">number</span> <span class="k">=</span> <span class="n">number</span> <span class="o">/</span> <span class="n">prime</span>
       <span class="n">count</span> <span class="k">=</span> <span class="n">count</span> <span class="o">+</span> <span class="mi">1</span>
     <span class="o">}</span>
     <span class="k">if</span> <span class="o">(</span><span class="n">prime</span> <span class="o">==</span> <span class="mi">2</span> <span class="o">&amp;&amp;</span> <span class="n">count</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
       <span class="n">count</span> <span class="k">=</span> <span class="n">count</span> <span class="o">-</span> <span class="mi">1</span>
     <span class="o">}</span>
-    <span class="n">dns</span><span class="o">(</span><span class="n">n</span><span class="o">,</span> <span class="n">sum</span> <span class="o">*</span> <span class="o">(</span><span class="n">count</span> <span class="o">+</span> <span class="mi">1</span><span class="o">),</span> <span class="n">tail</span><span class="o">)</span>
+    <span class="n">divisisorNumbers</span><span class="o">(</span><span class="n">number</span><span class="o">,</span> <span class="n">sum</span> <span class="o">*</span> <span class="o">(</span><span class="n">count</span> <span class="o">+</span> <span class="mi">1</span><span class="o">),</span> <span class="n">tail</span><span class="o">)</span>
 <span class="o">}</span>
 <span class="k">def</span> <span class="n">euler12</span><span class="o">(</span><span class="n">n</span><span class="k">:</span> <span class="kt">Int</span><span class="o">)</span> <span class="k">=</span> <span class="o">{</span>
-  <span class="k">val</span> <span class="n">primeStreamInt</span> <span class="k">=</span> <span class="nc">Stream</span><span class="o">.</span><span class="n">from</span><span class="o">(</span><span class="mi">1</span><span class="o">).</span><span class="n">filter</span><span class="o">(</span><span class="nc">BigInt</span><span class="o">(</span><span class="k">_</span><span class="o">).</span><span class="n">isProbablePrime</span><span class="o">(</span><span class="mi">15</span><span class="o">))</span>
+  <span class="k">val</span> <span class="n">primeStreamInt</span>  <span class="k">=</span> <span class="nc">Stream</span><span class="o">.</span><span class="n">from</span><span class="o">(</span><span class="mi">1</span><span class="o">)</span>
+    <span class="o">.</span><span class="n">filter</span><span class="o">(</span><span class="nc">BigInt</span><span class="o">(</span><span class="k">_</span><span class="o">).</span><span class="n">isProbablePrime</span><span class="o">(</span><span class="mi">15</span><span class="o">))</span>
   <span class="nc">Stream</span><span class="o">.</span><span class="n">from</span><span class="o">(</span><span class="mi">1</span><span class="o">)</span>
-    <span class="o">.</span><span class="n">find</span><span class="o">(</span><span class="n">i</span> <span class="k">=&gt;</span> <span class="n">dns</span><span class="o">(</span><span class="n">i</span><span class="o">,</span><span class="mi">1</span><span class="o">,</span> <span class="n">primeStreamInt</span><span class="o">)</span> <span class="o">*</span> <span class="n">dns</span><span class="o">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="o">,</span> <span class="mi">1</span><span class="o">,</span><span class="n">primeStreamInt</span><span class="o">)</span> <span class="o">&gt;</span> <span class="n">n</span><span class="o">)</span>
+    <span class="o">.</span><span class="n">find</span><span class="o">(</span><span class="n">i</span> <span class="k">=&gt;</span> <span class="n">divisisorNumbers</span><span class="o">(</span><span class="n">i</span><span class="o">,</span><span class="mi">1</span><span class="o">,</span> <span class="n">primeStreamInt</span><span class="o">)</span> <span class="o">*</span>
+          <span class="n">divisisorNumbers</span><span class="o">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="o">,</span> <span class="mi">1</span><span class="o">,</span><span class="n">primeStreamInt</span><span class="o">)</span> <span class="o">&gt;</span> <span class="n">n</span><span class="o">)</span>
     <span class="o">.</span><span class="n">map</span><span class="o">(</span><span class="n">i</span> <span class="k">=&gt;</span> <span class="n">i</span> <span class="o">*</span> <span class="o">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="o">)</span> <span class="o">/</span> <span class="mi">2</span><span class="o">)</span>
 <span class="o">}</span>
 </code></pre>
@@ -300,7 +305,7 @@ res6: Option[Int] = Some(76576500)
 
 <h3 id="section-11">结语</h3>
 
-<p>Scala是一门很有趣的语言，同时具有函数式语言的活泼和Java生态系统的严谨。如果你还有学习的动力，把它作为你的下一门语言吧。</p>
+<p>Scala是一门很有趣的语言，同时具有函数式语言的灵敏和Java生态系统的严谨。如果你还有学习的动力，把它作为你的下一门语言吧。</p>
 
 
 	
