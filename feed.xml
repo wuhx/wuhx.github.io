@@ -6,8 +6,8 @@
     <atom:link href="xun.im/feed.xml" rel="self" type="application/rss+xml" />
     <description>personal blog, scala, akka,</description>
     <language>en-us</language>
-    <pubDate>Thu, 03 Sep 2015 22:04:26 +0800</pubDate>
-    <lastBuildDate>Thu, 03 Sep 2015 22:04:26 +0800</lastBuildDate>
+    <pubDate>Sun, 18 Oct 2015 11:17:18 +0800</pubDate>
+    <lastBuildDate>Sun, 18 Oct 2015 11:17:18 +0800</lastBuildDate>
 
     
       <item>
@@ -329,6 +329,8 @@ res6: Option[Int] = Some(76576500)
 
 &lt;p&gt;&lt;strong&gt;附：&lt;/strong&gt;&lt;/p&gt;
 
+&lt;p&gt;&lt;a href=&quot;http://www.v2ex.com/t/215601&quot;&gt;v2ex讨论链接&lt;/a&gt;&lt;/p&gt;
+
 &lt;p&gt;&lt;a href=&quot;http://slick.typesafe.com/doc/3.0.0/orm-to-slick.html&quot;&gt;Slick文档FRM VS ORM&lt;/a&gt; （建议发送到kindle上细读：）&lt;/p&gt;
 
 &lt;p&gt;&lt;a href=&quot;http://xun.im/2015/07/19/weixin-robot-vs-kindle/&quot;&gt;微信你的Kindle：记录我的第一个Web项目&lt;/a&gt;&lt;/p&gt;
@@ -364,7 +366,10 @@ res6: Option[Int] = Some(76576500)
       &lt;/li&gt;
     &lt;/ul&gt;
   &lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#section-10&quot; id=&quot;markdown-toc-section-10&quot;&gt;四： 总结&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#section-10&quot; id=&quot;markdown-toc-section-10&quot;&gt;四： 总结&lt;/a&gt;    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#section-11&quot; id=&quot;markdown-toc-section-11&quot;&gt;附：&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;h3 id=&quot;section&quot;&gt;一：实现了什么&lt;/h3&gt;
@@ -514,18 +519,13 @@ res6: Option[Int] = Some(76576500)
 
 &lt;p&gt;neveread.com是我第一个web项目，作为一个前BSP驱动码农，处处要学，费力自不必提，但那种看到一个程序从无到有的运行起来，只要拿起手机无时无地都能和你互动的成就感，是在一个大公司编写模块代码无法获取到的。&lt;/p&gt;
 
-&lt;p&gt;####附：&lt;/p&gt;
+&lt;h4 id=&quot;section-11&quot;&gt;附：&lt;/h4&gt;
 
 &lt;ol&gt;
-  &lt;li&gt;
-    &lt;p&gt;&lt;a href=&quot;http://neveread.com/&quot;&gt;http://neveread.com/&lt;/a&gt;&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;&lt;a href=&quot;http://mp.weixin.qq.com/s?__biz=MzI2MDAxNzMzMg%3D%3D&amp;amp;mid=208689533&amp;amp;idx=1&amp;amp;sn=59368c84e0b2060aaba1e3ca9da0c550&amp;amp;scene=1&amp;amp;key=c76941211a49ab58a303ed91f93a38d9d39196ac3f9ab0641f3be3b436315ca17bf3f505967d92a432977d732764e6a1&amp;amp;ascene=1&amp;amp;uin=MTYwNDMxMTUwNg%253D%253D&quot;&gt;帮助文档&lt;/a&gt;&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;微信机器人1: 文字鲨（验证码请邮件pm@kindle.pm）&lt;/p&gt;
-  &lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;http://www.v2ex.com/t/206832&quot;&gt;v2ex讨论链接&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;http://neveread.com/&quot;&gt;http://neveread.com/&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;http://mp.weixin.qq.com/s?__biz=MzI2MDAxNzMzMg%3D%3D&amp;amp;mid=208689533&amp;amp;idx=1&amp;amp;sn=59368c84e0b2060aaba1e3ca9da0c550&amp;amp;scene=1&amp;amp;key=c76941211a49ab58a303ed91f93a38d9d39196ac3f9ab0641f3be3b436315ca17bf3f505967d92a432977d732764e6a1&amp;amp;ascene=1&amp;amp;uin=MTYwNDMxMTUwNg%253D%253D&quot;&gt;帮助文档&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;微信机器人1: 文字鲨（验证码请邮件pm@kindle.pm）&lt;/li&gt;
 &lt;/ol&gt;
 
 &lt;p&gt;&lt;img src=&quot;http://7u2pdt.com1.z0.glb.clouddn.com/robot-sha.jpeg&quot; alt=&quot;文字鲨&quot; /&gt;&lt;/p&gt;
