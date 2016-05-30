@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!-- meta information -->
+<meta charset="utf-8">
+<meta name="description" 
+      content="一台安卓手机主要有3个独立的软件系统：bootloader，Android主系统，recovery系统。开机时，bootloader最先启动，并可选择加载Android还是recovery系统。可以理解为PC的BIOS。Android..." >
+<meta name="author" content="wuhx">
+
+<!-- Enable responsiveness on mobile devices-->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+<!-- title -->
+<title>从一个程序员的角度理解Android的刷机和Rooting &middot; Not my idea</title>
+
+<!-- icons -->
+<link rel="shortcut icon" href="/public/images/favicon.ico" />
+
+<!-- stylesheets -->
+<link rel="stylesheet" href="/public/css/responsive.gs.12col.css">
+<link rel="stylesheet" href="/public/css/animate.min.css">
+<link rel="stylesheet" href="/public/css/main.css">
+
+<!-- Google fonts -->
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,400italic&subset=latin-ext">
+
+
+
+<!-- feed links -->
+<link rel="alternate" href="xun.im/feed.xml" type="application/rss+xml" title="">
+
+  </head>
+  <body>
+    <div class="container azul">
+      <header class="top row gutters">
+        <div class="col span_2 center">
+          <!-- TODO: add baseurl to the logo link -->
+          <a href="xun.im" id="logo" title="Not my idea"
+             style="background-image: url(/public/images/logo.png);"></a>
+        </div>
+        <nav class="col span_10 top-navbar">
+  
+  <a href="/" title="Home"
+     >Home</a>
+  
+  <a href="/about" title="About"
+     >About</a>
+  
+</nav>
+
+      </header>
+
+      <article class="single row gutters">
+  <time class="published" datetime="2016-05-30">30 May 2016</time>
+  <h2>从一个程序员的角度理解Android的刷机和Rooting</h2>
+
+  <p>一台安卓手机主要有3个独立的软件系统：bootloader，Android主系统，recovery系统。</p>
+
+<p>开机时，bootloader最先启动，并可选择加载Android还是recovery系统。可以理解为PC的BIOS。</p>
+
+<p>Android主系统是最复杂的部分，它又分成boot，linux内核，Dalvik/ART支撑起来的App运行环境和各种App。</p>
+
+<p>recovery系统主要用于Android主系统的升级，故障修复恢复出厂设置等。有点类似Windows下的安全模式，但和安全模式不同，recovery是个安装在单独分区上的独立系统，能在Andorid主系统没有运行的情况下独立运行，所以可以修改主系统上的任何文件。</p>
+
+<p>因为系统运行时不能修改自身的一些核心部件，所以Android要升级系统一般有两种方式：</p>
+
+<ol>
+  <li>在bootloader模式下，通过fastboot工具直接写手机的flash芯片，这种方式功能最为强大，不仅能修改Android或recovery的系统文件，甚至还能给flash芯片重新分区，格式化等都不在话下。缺点是功能比较raw，不理解文件系统，要单独修改某个文件会比较麻烦。</li>
+  <li>在recovery模式下，mount主系统分区，进行文件读写。第三方工具刷机和OTA系统升级都是用这种方式。AOSP（安卓原生代码）自带的recovery系统是个功能非常简单的系统，除了配合OTA升级，基本没有其他功能。所以产生了第三方recovery系统，最著名的是<a href="https://twrp.me/">TWRP</a>，另外<a href="http://www.cyanogenmod.org/">CyanogenMod</a>的recovery系统功能相对完善，也自成一派。</li>
+</ol>
+
+<p>所以，安卓刷机有以下几种类型：</p>
+
+<ol>
+  <li>正常的系统升级（OTA）。安卓系统检测到有新的版本，下载新版本到本地flash，提示用户重启手机后进入recovery系统，解压新版本文件，覆盖到原系统分区，重启手机，进入新系统。</li>
+  <li>fastboot升级，以flash分区为单位，升级boot，recovery等各个部件。如<code class="highlighter-rouge">fastboot flash recovery twrp.img</code> <code class="highlighter-rouge">fastboot flash boot boot.img</code></li>
+  <li>刷recovery系统（如TWRP），然后通过recovery系统随意刷任何第三方Rom，或者修改一些系统关键文件，如Xposed会替换掉安卓核心进程Zygote。</li>
+</ol>
+
+<p>第三种方式的自由度是最高的，但受制与厂商的具体实现，无论是recovery系统还是bootloader都可能会对安卓系统包进行签名验证，拒绝安装非原厂系统。因为Rocovery系统本身可以在bootloader下刷，所以要破解手机刷第三方Rom的关键是bootloader是否被锁了。这方面，Google亲儿子Nexus系列是最方便的，一行命令<code class="highlighter-rouge">fastboot oem lock</code>即可解锁bootloader，其他开发者友好的厂商如一加手机也支持该方法， Sony的<a href="http://developer.sonymobile.com/unlockbootloader/">Xperia</a>需要邮件验证提供解锁码，<a href="http://www.miui.com/unlock/">小米</a>也可申请解锁权限，但需mi帐号绑定，并有一些限制。而另外一些手机则需要等待破解漏洞。</p>
+
+<h5 id="rooting">Rooting</h5>
+
+<p>上面讲的都是刷机，而Rooting是指获取系统的最高权限。Android和普通Linux系统一样，有普通用户和root用户（用户ID为0），不一样的是Android系统为每个App生成了一个用户，从而更好的隔离各个App的权限。同时Android也引入了SeLinux，除了根据UID来检查权限外，App的行为还需符合SeLinux设定的规则，如普通App都属于untrusted_app分组，权限相对较小。可以用<code class="highlighter-rouge">adb shell logcat|grep audit</code> 命令查看SeLinux消息，任何违反SeLinux规则的操作都会被记录下来，并会根据Selinux的状态决定是否阻止该操作。SeLinux有两种状态：enforce和permissive分别对应打开和关闭。可通过getenforce查看和setenforce（需root权限）设置。</p>
+
+<p>获取Root权限有两种情况：</p>
+
+<ol>
+  <li>获取一个root shell。</li>
+  <li>管理App的root权限申请。</li>
+</ol>
+
+<p>第一种情况相对简单，adb工具有一个<code class="highlighter-rouge">adb root</code> 命令，用于打开一个root shell。但如果你直接使用会提示<code class="highlighter-rouge">adbd cannot run as root in production builds</code> ，这时你需要修改Android系统的ro.debuggable属性为1，让系统认为自己在调试开发模式。但ro.debuggable无法通过setprop工具设置。有两种方法：</p>
+
+<ol>
+  <li>通过<a href="https://github.com/wuhx/setpropex">setpropex</a>工具直接修改init内存的方式修改ro.debuggable属性。</li>
+  <li>修改<a href="http://android-dls.com/wiki/index.php?title=HOWTO:_Unpack%2C_Edit%2C_and_Re-Pack_Boot_Images">boot image</a>中设置ro.debuggable属性的配置文件.</li>
+</ol>
+
+<p>这两种方法都比较复杂，所以就有了一个第三方工具<a href="https://play.google.com/store/apps/details?id=eu.chainfire.adbd&amp;hl=zh">adbd Insecure</a>，（ps：它的作者也是SuperSu的作者Chainfire）。这个工具的原理是用一个修改过的adbd替换掉原有adbd，从而跳过ro.debuggable属性检查（我猜：）。</p>
+
+<p>顺便说一下adb这个工具，adb由三部分组成：</p>
+
+<ol>
+  <li>adb客户端，也就是我们输入adb命令调用的那个，运行在调试电脑上。</li>
+  <li>adb服务端，负责和手机通信，提供数据链路的抽象，adb客户端无需考虑是通过USB线缆，还是TCP协议等其他方式和手机交互，也运行在调试电脑上。</li>
+  <li>adbd服务进程。运行在手机端，代表Android系统和adb客户端交互。包括提供shell给用户，所以我们要获取root权限的shell需要先过它这一关。</li>
+</ol>
+
+<p>当然还有一种获取root shell的方式是，用<code class="highlighter-rouge">adb shell</code> 命令开启一个普通权限的shell后，执行su（刷SuperSu后，会安装到系统路径）命令，提权到root用户。但这样有个缺点，<code class="highlighter-rouge">adb push</code> <code class="highlighter-rouge">adb pull</code>这些命令的权限都不是root，拷贝文件会非常不方便。</p>
+
+<p>SuperSu的主要作用是提供第三方App的Root权限管理，具体就是，第三方App想使用root权限时，SuperSu弹出一个对话框，由用户确认是否给予root权限。以此提供一个相对安全的环境。</p>
+
+<p>值得一提的是，SuperSu是一个闭源软件，作为一个开源系统上的最高权限软件，这简直有点不可思议，所以XDA上发起了一个<a href="http://www.xda-developers.com/the-importance-of-open-source-in-root/">SuperSu开源替代</a>项目。</p>
+
+<h3 id="section">相关链接</h3>
+
+<p><a href="https://su.chainfire.eu/">How-To SU</a></p>
+
+<p><a href="https://twrp.me/">TWRP</a></p>
+
+<p><a href="http://trendblog.net/guide-to-android-rooting-custom-roms-apps/">http://trendblog.net/guide-to-android-rooting-custom-roms-apps/</a></p>
+
+<p><a href="https://download.chainfire.eu/supersu">https://download.chainfire.eu/supersu</a></p>
+
+<p><a href="http://wiki.cyanogenmod.org/w/Devices">http://wiki.cyanogenmod.org/w/Devices</a></p>
+
+<p><a href="http://developer.sonymobile.com/unlockbootloader">http://developer.sonymobile.com/unlockbootloader</a></p>
+
+<p><a href="https://wiki.cyanogenmod.org/w/Doc:_fastboot_intro">https://wiki.cyanogenmod.org/w/Doc:_fastboot_intro</a></p>
+
+<p><a href="https://www.kingoapp.com/help/fastboot-mode.htm">https://www.kingoapp.com/help/fastboot-mode.htm</a></p>
+
+<p><a href="https://wiki.cyanogenmod.org/w/All_About_Recovery_Images">https://wiki.cyanogenmod.org/w/All_About_Recovery_Images</a></p>
+
+
+	
+	<!-- duoshuo box -->
+	<div class="ds-thread" data-thread-key="/2016/05/30/understand-android-rooting" data-title="从一个程序员的角度理解Android的刷机和Rooting" data-url="xun.im/2016/05/30/understand-android-rooting/"></div>
+	<!-- duoshuo box end -->
+	
+</article>
+
+
+      <footer>
+        <p>
+          This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-nd/2.5/deed.zh">署名-非商业性使用-禁止演绎 </a>License.
+        </p>
+      </footer>
+    </div>
+
+    <!-- scripts -->
+		<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+		
+	<link rel="stylesheet" href="/public/css/tomorrow.css">
+	<script src="/public/js/highlight.pack.js"></script>
+	<script>hljs.initHighlightingOnLoad();</script>
+	
+    <script src="/public/js/jquery.min.js"></script>
+    <script src="/public/js/jquery.fitvids.js"></script>
+    <script>
+      $(document).ready(function(){
+        $("article").fitVids();
+      });
+    </script>
+		
+		<!-- google analystics for xun.im -->
+		<script>
+		  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+		  ga('create', 'UA-31449466-1', 'auto');
+		  ga('send', 'pageview');
+		</script>
+		<!-- baidu site for xun.im -->
+		<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "//hm.baidu.com/hm.js?b62786d99652b034add78b003086816f";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+		</script>
+		<!-- duoshuo common -->
+		<script type="text/javascript">
+		var duoshuoQuery = {short_name:"5site"};
+			(function() {
+				var ds = document.createElement('script');
+				ds.type = 'text/javascript';ds.async = true;
+				ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+				ds.charset = 'UTF-8';
+				(document.getElementsByTagName('head')[0] 
+				 || document.getElementsByTagName('body')[0]).appendChild(ds);
+			})();
+			</script>
+		<!-- duoshuo end -->
+		
+		
+  </body>
+</html>
