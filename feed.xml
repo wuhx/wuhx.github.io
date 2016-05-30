@@ -6,9 +6,80 @@
     <atom:link href="xun.im/feed.xml" rel="self" type="application/rss+xml" />
     <description>personal blog, scala, akka,</description>
     <language>en-us</language>
-    <pubDate>Sun, 18 Oct 2015 11:17:18 +0800</pubDate>
-    <lastBuildDate>Sun, 18 Oct 2015 11:17:18 +0800</lastBuildDate>
+    <pubDate>Mon, 30 May 2016 09:49:58 +0800</pubDate>
+    <lastBuildDate>Mon, 30 May 2016 09:49:58 +0800</lastBuildDate>
 
+    
+      <item>
+        <title>ShellDroid：用Scala写一个简单的微信多开App</title>
+        <link>xun.im/2016/05/30/shelldroid-a-virtual-environments-for-android-apps/</link>
+        <pubDate>Mon, 30 May 2016 00:00:00 +0800</pubDate>
+        <author>wuhx</author>
+        <description>&lt;h3 id=&quot;section&quot;&gt;起因&lt;/h3&gt;
+
+&lt;p&gt;因为运行着一个Kindle推送&lt;a href=&quot;http://neveread.com/&quot;&gt;微信机器人&lt;/a&gt;，时常需要在手机上切换私人微信号查看一下，每次手动重新输入帐号密码过于麻烦，网上的微信多开版本又各种不靠谱。研究了一下安卓App运行过程，发现其实要实现App多帐号运行非常简单，于是自己动手写了一个。&lt;/p&gt;
+
+&lt;h3 id=&quot;scala&quot;&gt;为什么使用Scala写安卓应用&lt;/h3&gt;
+
+&lt;p&gt;虽然Java是Android上的官方语言，各种坑更少。但Scala因为语言本身的优势，可以更愉快的写代码，加上&lt;a href=&quot;https://github.com/scala-android/sbt-android&quot;&gt;sbt android&lt;/a&gt;等第三方库的成熟，自己要折腾的地方并不多。&lt;/p&gt;
+
+&lt;h4 id=&quot;scala-1&quot;&gt;Scala写安卓应用的优点&lt;/h4&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;代码更简洁，Scala的implicit特别适合处理Android UI代码中的随处可见的context上下文参数，隐式类型转换用来提取UI控件信息等，也能大幅度减少代码。&lt;/li&gt;
+  &lt;li&gt;类型安全的资源文件（Typed Resources）。不用先findViewById，再Cast到正确的资源类型。&lt;/li&gt;
+  &lt;li&gt;借用安卓AsyncTask的线程池配合Scala的Future，轻松实现异步处理。&lt;/li&gt;
+  &lt;li&gt;Scala的原生语言特性（lazy val懒绑定）直接实现&lt;a href=&quot;http://jakewharton.github.io/butterknife/&quot;&gt;Butterknife&lt;/a&gt;类似资源绑定功能，无需第三方库。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h4 id=&quot;scala-2&quot;&gt;Scala写安卓应用的缺点&lt;/h4&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;引入Scala库后，应用体积变大，并会碰到&lt;a href=&quot;https://developer.android.com/studio/build/multidex.html&quot;&gt;安卓的64K问题&lt;/a&gt; ，proguard变成标配。理论上这个问题可以通过在系统中预装Scala库解决。&lt;/li&gt;
+  &lt;li&gt;没有谷歌官方支持，自配Intellj开发，Android Studio很多功能用不到。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h4 id=&quot;section-1&quot;&gt;总结&lt;/h4&gt;
+
+&lt;p&gt;用Scala写安卓应用，完全可行并且更有乐趣，但文档和支持度相对较少，需要你有自行阅读代码解决问题的能力。&lt;/p&gt;
+
+&lt;p&gt;另外，因为安卓运行时（runtime）本质上是一个谷歌对JVM标准的实现，Scala作为一种通用JVM语言，可以跳过Android App框架，直接写能在安卓上运行的命令行程序，比如以前用Scala写过一个安卓Native程序&lt;a href=&quot;https://github.com/wuhx/setpropex&quot;&gt;setpropex&lt;/a&gt;，可通过修改安卓init系统进程的内存来设置一些常规手段不能设置的属性。&lt;/p&gt;
+
+&lt;h3 id=&quot;shelldroid&quot;&gt;ShellDroid的原理&lt;/h3&gt;
+
+&lt;p&gt;安卓是一个多用户系统，所有的App都有一个数据目录，放在/data/data/appname下，ShellDroid为了实现App多个帐号登录，备份了每个账户的数据目录，在用户切换帐号时，切换数据目录。&lt;/p&gt;
+
+&lt;p&gt;类似的项目有LBE平行空间，没有详细了解其原理，只看了一下官网介绍，猜测应该是用了类似虚拟机的机制，其他App运行在平行空间虚拟的安卓API里，然后由平行空间调用真实安卓API。这样的好处是对App有完全控制，并且不需要root权限。&lt;/p&gt;
+
+&lt;p&gt;但缺点也很明显：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;开发的工作量会很大。&lt;/li&gt;
+  &lt;li&gt;对用户来说，装LBE平行空间这样一个权限巨大的不开源黑盒软件，风险会很大。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;另外LBE平行空间只支持双开，不支持三开或更多，ShellDroid完全没有这个限制。&lt;/p&gt;
+
+&lt;p&gt;同时，多开只是ShellDroid的一个功能，利用 &lt;a href=&quot;http://repo.xposed.info/&quot;&gt;Xposed&lt;/a&gt;，ShellDroid还可以定制App在不同多开环境下能获取到的手机私隐信息。比如IMEI，手机型号，手机品牌等。如果你用过&lt;a href=&quot;https://github.com/M66B/XPrivacy&quot;&gt;XPrivacy&lt;/a&gt;，ShellDroid就相当于一个可根据App帐号区分权限的Xprivacy，用不同帐号运行App，该App会有不同的权限。当然这个功能实现的较为简单，没有Xprivacy那么强大。&lt;/p&gt;
+
+&lt;p&gt;于是配合这两个能力，我们不仅可以双开微信，而且可以迷惑微信对所运行的真实手机硬件环境的感知。大家都知道，在不同的手机登录微信时，哪怕你的帐号密码都对，微信都会要重新认证一下。ShellDroid会把App第一次运行生成的所有数据和ShellDroid运行环境配置放在一起，相当于制作了一个portable的微信：）。&lt;/p&gt;
+
+&lt;h3 id=&quot;section-2&quot;&gt;如何使用&lt;/h3&gt;
+
+&lt;p&gt;下载ShellDroid的源码，执行&lt;code class=&quot;highlighter-rouge&quot;&gt;sbt apk&lt;/code&gt;编译安装运行。注意事项请参考&lt;a href=&quot;https://github.com/wuhx/shelldroid/blob/master/README.md&quot;&gt;README&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://raw.githubusercontent.com/wuhx/shelldroid/master/screencast/main.png&quot; alt=&quot;运行界面&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;section-3&quot;&gt;相关链接&lt;/h3&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Scala On Android： &lt;a href=&quot;http://scala-on-android.taig.io/&quot;&gt;http://scala-on-android.taig.io/&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;Xposed： &lt;a href=&quot;http://repo.xposed.info/&quot;&gt;http://repo.xposed.info/&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;ShellDroid源码：&lt;a href=&quot;https://github.com/wuhx/shelldroid&quot;&gt;https://github.com/wuhx/shelldroid&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;setpropex源码：&lt;a href=&quot;https://github.com/wuhx/setpropex&quot;&gt;https://github.com/wuhx/setpropex&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+</description>
+      </item>
     
       <item>
         <title>数学的乐趣：Scala和Project Euler</title>
