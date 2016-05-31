@@ -6,8 +6,8 @@
     <atom:link href="xun.im/feed.xml" rel="self" type="application/rss+xml" />
     <description>personal blog, scala, akka,</description>
     <language>en-us</language>
-    <pubDate>Tue, 31 May 2016 11:24:06 +0800</pubDate>
-    <lastBuildDate>Tue, 31 May 2016 11:24:06 +0800</lastBuildDate>
+    <pubDate>Tue, 31 May 2016 11:26:20 +0800</pubDate>
+    <lastBuildDate>Tue, 31 May 2016 11:26:20 +0800</lastBuildDate>
 
     
       <item>
@@ -76,7 +76,7 @@
 
 &lt;p&gt;值得一提的是，SuperSu是一个闭源软件，作为一个开源系统上的最高权限软件，这简直有点不可思议，所以XDA上发起了一个&lt;a href=&quot;http://www.xda-developers.com/the-importance-of-open-source-in-root/&quot;&gt;SuperSu开源替代&lt;/a&gt;项目。&lt;/p&gt;
 
-&lt;p&gt;至于国内各大厂商推出的一键root，基本都是利用了Android系统的提权漏洞，安全存疑，不建议使用，并且随着Android系统的完善这种漏洞会越来越少。&lt;/p&gt;
+&lt;p&gt;至于国内各大厂商推出的一键Root软件，基本都是利用了Android系统的提权漏洞，安全存疑，不建议使用，并且随着Android系统的完善这种漏洞会越来越少。&lt;/p&gt;
 
 &lt;h3 id=&quot;section&quot;&gt;相关链接&lt;/h3&gt;
 
