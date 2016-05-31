@@ -6,8 +6,8 @@
     <atom:link href="xun.im/feed.xml" rel="self" type="application/rss+xml" />
     <description>personal blog, scala, akka,</description>
     <language>en-us</language>
-    <pubDate>Tue, 31 May 2016 11:26:20 +0800</pubDate>
-    <lastBuildDate>Tue, 31 May 2016 11:26:20 +0800</lastBuildDate>
+    <pubDate>Tue, 31 May 2016 15:52:00 +0800</pubDate>
+    <lastBuildDate>Tue, 31 May 2016 15:52:00 +0800</lastBuildDate>
 
     
       <item>
@@ -37,7 +37,7 @@
 &lt;ol&gt;
   &lt;li&gt;正常的系统升级（OTA）。安卓系统检测到有新的版本，下载新版本到本地flash，提示用户重启手机后进入recovery系统，解压新版本文件，覆盖到原系统分区，重启手机，进入新系统。&lt;/li&gt;
   &lt;li&gt;fastboot升级，以flash分区为单位，升级boot，recovery等各个部件。如&lt;code&gt;fastboot flash recovery twrp.img&lt;/code&gt; &lt;code&gt;fastboot flash boot boot.img&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;刷recovery系统（如TWRP），然后通过recovery系统随意刷任何第三方Rom，或者修改一些系统关键文件，如Xposed会替换掉安卓核心进程Zygote。&lt;/li&gt;
+  &lt;li&gt;刷recovery系统（如TWRP），然后通过recovery系统随意刷任何第三方Rom，或者修改一些系统关键文件，如Xposed会替换掉安卓核心进程Zygote，SuperSu会修改BootImage。&lt;/li&gt;
 &lt;/ol&gt;
 
 &lt;p&gt;第三种方式的自由度是最高的，但受制与厂商的具体实现，无论是recovery系统还是bootloader都可能会对安卓系统包进行签名验证，拒绝安装非原厂系统。因为Rocovery系统本身可以在bootloader下刷，所以要破解手机刷第三方Rom的关键是bootloader是否被锁了。这方面，Google亲儿子Nexus系列是最方便的，一行命令&lt;code&gt;fastboot oem lock&lt;/code&gt;即可解锁bootloader，其他开发者友好的厂商如一加手机也支持该方法， Sony的&lt;a href=&quot;http://developer.sonymobile.com/unlockbootloader/&quot;&gt;Xperia&lt;/a&gt;需要邮件验证提供解锁码，&lt;a href=&quot;http://www.miui.com/unlock/&quot;&gt;小米&lt;/a&gt;也可申请解锁权限，但需mi帐号绑定，并有一些限制。而另外一些手机则需要等待破解漏洞。&lt;/p&gt;

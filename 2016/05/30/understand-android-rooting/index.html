@@ -76,7 +76,7 @@
 <ol>
   <li>正常的系统升级（OTA）。安卓系统检测到有新的版本，下载新版本到本地flash，提示用户重启手机后进入recovery系统，解压新版本文件，覆盖到原系统分区，重启手机，进入新系统。</li>
   <li>fastboot升级，以flash分区为单位，升级boot，recovery等各个部件。如<code>fastboot flash recovery twrp.img</code> <code>fastboot flash boot boot.img</code></li>
-  <li>刷recovery系统（如TWRP），然后通过recovery系统随意刷任何第三方Rom，或者修改一些系统关键文件，如Xposed会替换掉安卓核心进程Zygote。</li>
+  <li>刷recovery系统（如TWRP），然后通过recovery系统随意刷任何第三方Rom，或者修改一些系统关键文件，如Xposed会替换掉安卓核心进程Zygote，SuperSu会修改BootImage。</li>
 </ol>
 
 <p>第三种方式的自由度是最高的，但受制与厂商的具体实现，无论是recovery系统还是bootloader都可能会对安卓系统包进行签名验证，拒绝安装非原厂系统。因为Rocovery系统本身可以在bootloader下刷，所以要破解手机刷第三方Rom的关键是bootloader是否被锁了。这方面，Google亲儿子Nexus系列是最方便的，一行命令<code>fastboot oem lock</code>即可解锁bootloader，其他开发者友好的厂商如一加手机也支持该方法， Sony的<a href="http://developer.sonymobile.com/unlockbootloader/">Xperia</a>需要邮件验证提供解锁码，<a href="http://www.miui.com/unlock/">小米</a>也可申请解锁权限，但需mi帐号绑定，并有一些限制。而另外一些手机则需要等待破解漏洞。</p>
