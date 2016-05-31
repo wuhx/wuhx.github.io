@@ -66,67 +66,64 @@
 
 <p>如：可以定义一个Magnet类型实现一个接受任意参数的add函数</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">def</span> <span class="n">add</span><span class="o">(</span><span class="n">magnet</span><span class="k">:</span> <span class="kt">MyMagnet</span><span class="o">)</span><span class="k">:</span> <span class="kt">magnet.Result</span> <span class="o">=</span> <span class="n">magnet</span><span class="o">()</span>
+<pre><code class="language-scala">def add(magnet: MyMagnet): magnet.Result = magnet()
 
-<span class="k">sealed</span> <span class="k">trait</span> <span class="nc">MyMagnet</span> <span class="o">{</span>
-  <span class="k">type</span> <span class="kt">Result</span>
-  <span class="k">def</span> <span class="n">apply</span><span class="o">()</span><span class="k">:</span> <span class="kt">Result</span>
-<span class="o">}</span>
+sealed trait MyMagnet {
+  type Result
+  def apply(): Result
+}
 
-<span class="k">object</span> <span class="nc">MyMagnet</span> <span class="o">{</span>
-  <span class="c1">//一个整形参数到MyMagenet的转换
-</span>  <span class="k">implicit</span> <span class="k">def</span> <span class="n">fromInt</span><span class="o">(</span><span class="n">i</span><span class="k">:</span> <span class="kt">Int</span><span class="o">)</span> <span class="k">=</span>
-    <span class="k">new</span> <span class="nc">MyMagnet</span> <span class="o">{</span>
-      <span class="k">type</span> <span class="kt">Result</span> <span class="o">=</span> <span class="nc">Int</span>
-      <span class="k">def</span> <span class="n">apply</span><span class="o">()</span><span class="k">:</span> <span class="kt">Result</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
-    <span class="o">}</span>
-  <span class="c1">//一个String参数到MyMagenet的转换
-</span>  <span class="k">implicit</span> <span class="k">def</span> <span class="n">fromString</span><span class="o">(</span><span class="n">s</span><span class="k">:</span> <span class="kt">String</span><span class="o">)</span> <span class="k">=</span>
-    <span class="k">new</span> <span class="nc">MyMagnet</span> <span class="o">{</span>
-      <span class="k">type</span> <span class="kt">Result</span> <span class="o">=</span> <span class="nc">String</span>
-      <span class="k">def</span> <span class="n">apply</span><span class="o">()</span><span class="k">:</span> <span class="kt">Result</span> <span class="o">=</span> <span class="s">"hello "</span> <span class="o">+</span> <span class="n">s</span>
-    <span class="o">}</span>
-  <span class="c1">//一个String参数加一个整形参数到MyMagenet的转换
-</span>  <span class="k">implicit</span> <span class="k">def</span> <span class="n">fromStringAndInt</span><span class="o">(</span><span class="n">tuple</span><span class="k">:</span> <span class="o">(</span><span class="kt">String</span><span class="o">,</span> <span class="kt">Int</span><span class="o">))</span> <span class="k">=</span>
-    <span class="k">new</span> <span class="nc">MyMagnet</span> <span class="o">{</span>
-      <span class="k">type</span> <span class="kt">Result</span> <span class="o">=</span> <span class="nc">String</span>
-      <span class="k">def</span> <span class="n">apply</span><span class="o">()</span><span class="k">:</span> <span class="kt">Result</span> <span class="o">=</span> <span class="n">tuple</span><span class="o">.</span><span class="n">_1</span> <span class="o">+</span> <span class="n">tuple</span><span class="o">.</span><span class="n">_2</span><span class="o">.</span><span class="n">toString</span>
-    <span class="o">}</span>
-<span class="o">}</span>
+object MyMagnet {
+  //一个整形参数到MyMagenet的转换
+  implicit def fromInt(i: Int) =
+    new MyMagnet {
+      type Result = Int
+      def apply(): Result = i + 1
+    }
+  //一个String参数到MyMagenet的转换
+  implicit def fromString(s: String) =
+    new MyMagnet {
+      type Result = String
+      def apply(): Result = "hello " + s
+    }
+  //一个String参数加一个整形参数到MyMagenet的转换
+  implicit def fromStringAndInt(tuple: (String, Int)) =
+    new MyMagnet {
+      type Result = String
+      def apply(): Result = tuple._1 + tuple._2.toString
+    }
+}
 </code></pre>
-</div>
 
 <p>调用的时候可以：</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="gp">scala&gt; </span>add<span class="o">(</span>1<span class="o">)</span>
-res9: Int <span class="o">=</span> 2
+<pre><code class="language-bash">scala&gt; add(1)
+res9: Int = 2
 
-<span class="gp">scala&gt; </span>add<span class="o">(</span><span class="s2">"world"</span><span class="o">)</span>
-res10: String <span class="o">=</span> hello world
+scala&gt; add("world")
+res10: String = hello world
 
-<span class="gp">scala&gt; </span>add<span class="o">(</span><span class="s2">"happy string "</span>, 5<span class="o">)</span>
-res11: String <span class="o">=</span> happy string 5
+scala&gt; add("happy string ", 5)
+res11: String = happy string 5
 </code></pre>
-</div>
 
 <p>看到这里，你可能会说这不就是重载吗？java和scala原生就支持重载，但jvm对泛型（generics）的支持是通过类型擦除（type erasure）实现的，这意味着java常规的重载无法带类型参数，如：jvm无法区分下面这种类型不同的List参数。</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">scala</span><span class="o">&gt;</span> <span class="k">:</span><span class="kt">paste</span>
-<span class="c1">// Entering paste mode (ctrl-D to finish)
-</span>
-<span class="k">def</span> <span class="n">add</span><span class="o">(</span><span class="n">a</span><span class="k">:</span> <span class="kt">List</span><span class="o">[</span><span class="kt">Int</span><span class="o">])</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{}</span>
-<span class="k">def</span> <span class="n">add</span><span class="o">(</span><span class="n">a</span><span class="k">:</span> <span class="kt">List</span><span class="o">[</span><span class="kt">String</span><span class="o">])</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{}</span>
+<pre><code class="language-scala">scala&gt; :paste
+// Entering paste mode (ctrl-D to finish)
 
-<span class="c1">// Exiting paste mode, now interpreting.
-</span>
-<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">8</span><span class="k">:</span> <span class="kt">error:</span> <span class="kt">double</span> <span class="kt">definition:</span>
-<span class="kt">def</span> <span class="kt">add</span><span class="o">(</span><span class="kt">a:</span> <span class="kt">List</span><span class="o">[</span><span class="kt">Int</span><span class="o">])</span><span class="k">:</span> <span class="kt">Unit</span> <span class="kt">at</span> <span class="kt">line</span> <span class="err">7</span> <span class="kt">and</span>
-<span class="k">def</span> <span class="n">add</span><span class="o">(</span><span class="n">a</span><span class="k">:</span> <span class="kt">List</span><span class="o">[</span><span class="kt">String</span><span class="o">])</span><span class="k">:</span> <span class="kt">Unit</span> <span class="kt">at</span> <span class="kt">line</span> <span class="err">8</span>
-<span class="kt">have</span> <span class="kt">same</span> <span class="k">type</span> <span class="kt">after</span> <span class="kt">erasure:</span> <span class="o">(</span><span class="kt">a:</span> <span class="kt">List</span><span class="o">)</span><span class="kt">Unit</span>
-<span class="k">def</span> <span class="n">add</span><span class="o">(</span><span class="n">a</span><span class="k">:</span> <span class="kt">List</span><span class="o">[</span><span class="kt">String</span><span class="o">])</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{}</span>
+def add(a: List[Int]): Unit = {}
+def add(a: List[String]): Unit = {}
+
+// Exiting paste mode, now interpreting.
+
+&lt;console&gt;:8: error: double definition:
+def add(a: List[Int]): Unit at line 7 and
+def add(a: List[String]): Unit at line 8
+have same type after erasure: (a: List)Unit
+def add(a: List[String]): Unit = {}
 
 </code></pre>
-</div>
 
 <p>而magnet模式正好可以弥补这个缺憾，另外magnet模式相当于把重载的实现从语言层面拉到了自己的代码逻辑中，有利于针对性的引入一些新技巧减少冗余代码。当然，magnet的缺点也是很明显的：额外的一层增加了代码的复杂度。</p>
 
@@ -138,9 +135,8 @@ res11: String <span class="o">=</span> happy string 5
 
 <p>所以scala的<a href="http://www.scala-lang.org/files/archive/nightly/docs/library/index.html#scala.concurrent.Future">Future</a>方法都有一个(implicit executor: ExecutionContext)参数</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">def</span> <span class="n">onComplete</span><span class="o">(</span><span class="n">U</span> <span class="k">⇒</span> <span class="n">U</span><span class="o">)(</span><span class="k">implicit</span> <span class="n">executor</span><span class="k">:</span> <span class="kt">ExecutionContext</span><span class="o">)</span><span class="k">:</span> <span class="kt">Unit</span>
+<pre><code class="language-scala">def onComplete(U ⇒ U)(implicit executor: ExecutionContext): Unit
 </code></pre>
-</div>
 
 <p>不同于全局变量，你在调用Future方法时，想使用某个指定的ExecutionContext，还是可以把它作为参数显示的传递给Future方法，这个显示传递的参数会覆盖implicit的参数。</p>
 
@@ -148,21 +144,20 @@ res11: String <span class="o">=</span> happy string 5
 
 <ol>
   <li>
-    <p>直接引用全局EC。<code class="highlighter-rouge">import scala.concurrent.ExecutionContext.Implicits.global</code></p>
+    <p>直接引用全局EC。<code>import scala.concurrent.ExecutionContext.Implicits.global</code></p>
   </li>
   <li>
-    <p>akka的actor中，引用当前actor系统的EC。<code class="highlighter-rouge">import context.dispatcher</code></p>
+    <p>akka的actor中，引用当前actor系统的EC。<code>import context.dispatcher</code></p>
   </li>
   <li>
     <p>也可以手动创建一个独占使用，确保线程池里的线程不会被其他不相干任务耗尽。</p>
 
-    <div class="highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">java.util.concurrent.Executors</span>
-<span class="k">import</span> <span class="nn">concurrent.ExecutionContext</span>
-<span class="c1">//创建一个4个线程的线程池
-</span><span class="k">val</span> <span class="n">executorService</span> <span class="k">=</span> <span class="nc">Executors</span><span class="o">.</span><span class="n">newFixedThreadPool</span><span class="o">(</span><span class="mi">4</span><span class="o">)</span>
-<span class="k">implicit</span> <span class="k">val</span> <span class="n">ec</span> <span class="k">=</span> <span class="nc">ExecutionContext</span><span class="o">.</span><span class="n">fromExecutorService</span><span class="o">(</span><span class="n">executorService</span><span class="o">)</span>
+    <pre><code class="language-scala">import java.util.concurrent.Executors
+import concurrent.ExecutionContext
+//创建一个4个线程的线程池
+val executorService = Executors.newFixedThreadPool(4)
+implicit val ec = ExecutionContext.fromExecutorService(executorService)
 </code></pre>
-    </div>
   </li>
 </ol>
 
@@ -176,7 +171,7 @@ res11: String <span class="o">=</span> happy string 5
 
 <p><a href="http://www.artima.com/pins1ed/implicit-conversions-and-parameters.html">Chapter 21 of Programming in Scala, First Edition</a></p>
 
-<p><a href="http://ropas.snu.ac.kr/~bruno/papers/TypeClasses.pdf">Type Classes as Objects and Implicits</a></p>
+<p><a href="http://ropas.snu.ac.kr/~bruno/papers/TypeClasses.pdf">Type Classes as Objects and Implicits</a> </p>
 
 
 	

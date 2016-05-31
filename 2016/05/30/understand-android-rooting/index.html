@@ -4,14 +4,14 @@
     <!-- meta information -->
 <meta charset="utf-8">
 <meta name="description" 
-      content="一台安卓手机主要有3个独立的软件系统：bootloader，Android主系统，recovery系统。开机时，bootloader最先启动，并可选择加载Android还是recovery系统。可以理解为PC的BIOS。Android..." >
+      content="相对于IOS，Andorid系统的最大优势是它的开放性，但这种开放性是一把双刃剑，它在给用户更多选择的同时，也让恶意软件有了更多的作恶途径。理解Android的运行机制，不仅能帮助我们更好的使用Android，也能保护我们不受坏软件的..." >
 <meta name="author" content="wuhx">
 
 <!-- Enable responsiveness on mobile devices-->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 
 <!-- title -->
-<title>从一个程序员的角度理解Android的刷机和Rooting &middot; Not my idea</title>
+<title>理解Android的刷机和Rooting &middot; Not my idea</title>
 
 <!-- icons -->
 <link rel="shortcut icon" href="/public/images/favicon.ico" />
@@ -52,9 +52,11 @@
 
       <article class="single row gutters">
   <time class="published" datetime="2016-05-30">30 May 2016</time>
-  <h2>从一个程序员的角度理解Android的刷机和Rooting</h2>
+  <h2>理解Android的刷机和Rooting</h2>
 
-  <p>一台安卓手机主要有3个独立的软件系统：bootloader，Android主系统，recovery系统。</p>
+  <p>相对于IOS，Andorid系统的最大优势是它的开放性，但这种开放性是一把双刃剑，它在给用户更多选择的同时，也让恶意软件有了更多的作恶途径。理解Android的运行机制，不仅能帮助我们更好的使用Android，也能保护我们不受坏软件的欺负。以下是我对刷机和Rooting的理解，以记录为主，有不对的地方欢迎指出。</p>
+
+<p>一台安卓手机主要有3个独立的软件系统：bootloader，Android主系统，recovery系统。</p>
 
 <p>开机时，bootloader最先启动，并可选择加载Android还是recovery系统。可以理解为PC的BIOS。</p>
 
@@ -73,15 +75,15 @@
 
 <ol>
   <li>正常的系统升级（OTA）。安卓系统检测到有新的版本，下载新版本到本地flash，提示用户重启手机后进入recovery系统，解压新版本文件，覆盖到原系统分区，重启手机，进入新系统。</li>
-  <li>fastboot升级，以flash分区为单位，升级boot，recovery等各个部件。如<code class="highlighter-rouge">fastboot flash recovery twrp.img</code> <code class="highlighter-rouge">fastboot flash boot boot.img</code></li>
+  <li>fastboot升级，以flash分区为单位，升级boot，recovery等各个部件。如<code>fastboot flash recovery twrp.img</code> <code>fastboot flash boot boot.img</code></li>
   <li>刷recovery系统（如TWRP），然后通过recovery系统随意刷任何第三方Rom，或者修改一些系统关键文件，如Xposed会替换掉安卓核心进程Zygote。</li>
 </ol>
 
-<p>第三种方式的自由度是最高的，但受制与厂商的具体实现，无论是recovery系统还是bootloader都可能会对安卓系统包进行签名验证，拒绝安装非原厂系统。因为Rocovery系统本身可以在bootloader下刷，所以要破解手机刷第三方Rom的关键是bootloader是否被锁了。这方面，Google亲儿子Nexus系列是最方便的，一行命令<code class="highlighter-rouge">fastboot oem lock</code>即可解锁bootloader，其他开发者友好的厂商如一加手机也支持该方法， Sony的<a href="http://developer.sonymobile.com/unlockbootloader/">Xperia</a>需要邮件验证提供解锁码，<a href="http://www.miui.com/unlock/">小米</a>也可申请解锁权限，但需mi帐号绑定，并有一些限制。而另外一些手机则需要等待破解漏洞。</p>
+<p>第三种方式的自由度是最高的，但受制与厂商的具体实现，无论是recovery系统还是bootloader都可能会对安卓系统包进行签名验证，拒绝安装非原厂系统。因为Rocovery系统本身可以在bootloader下刷，所以要破解手机刷第三方Rom的关键是bootloader是否被锁了。这方面，Google亲儿子Nexus系列是最方便的，一行命令<code>fastboot oem lock</code>即可解锁bootloader，其他开发者友好的厂商如一加手机也支持该方法， Sony的<a href="http://developer.sonymobile.com/unlockbootloader/">Xperia</a>需要邮件验证提供解锁码，<a href="http://www.miui.com/unlock/">小米</a>也可申请解锁权限，但需mi帐号绑定，并有一些限制。而另外一些手机则需要等待破解漏洞。</p>
 
 <h5 id="rooting">Rooting</h5>
 
-<p>上面讲的都是刷机，而Rooting是指获取系统的最高权限。Android和普通Linux系统一样，有普通用户和root用户（用户ID为0），不一样的是Android系统为每个App生成了一个用户，从而更好的隔离各个App的权限。同时Android也引入了SeLinux，除了根据UID来检查权限外，App的行为还需符合SeLinux设定的规则，如普通App都属于untrusted_app分组，权限相对较小。可以用<code class="highlighter-rouge">adb shell logcat|grep audit</code> 命令查看SeLinux消息，任何违反SeLinux规则的操作都会被记录下来，并会根据Selinux的状态决定是否阻止该操作。SeLinux有两种状态：enforce和permissive分别对应打开和关闭。可通过getenforce查看和setenforce（需root权限）设置。</p>
+<p>上面讲的都是刷机，而Rooting是指获取系统的最高权限。Android和普通Linux系统一样，有普通用户和root用户（用户ID为0），不一样的是Android系统为每个App生成了一个用户，从而更好的隔离各个App的权限。同时Android也引入了SeLinux，除了根据UID来检查权限外，App的行为还需符合SeLinux设定的规则，如普通App都属于untrusted_app分组，权限相对较小。可以用<code>adb shell logcat|grep audit</code> 命令查看SeLinux消息，任何违反SeLinux规则的操作都会被记录下来，并会根据Selinux的状态决定是否阻止该操作。SeLinux有两种状态：enforce和permissive分别对应打开和关闭。可通过getenforce查看和setenforce（需root权限）设置。</p>
 
 <p>获取Root权限有两种情况：</p>
 
@@ -90,11 +92,11 @@
   <li>管理App的root权限申请。</li>
 </ol>
 
-<p>第一种情况相对简单，adb工具有一个<code class="highlighter-rouge">adb root</code> 命令，用于打开一个root shell。但如果你直接使用会提示<code class="highlighter-rouge">adbd cannot run as root in production builds</code> ，这时你需要修改Android系统的ro.debuggable属性为1，让系统认为自己在调试开发模式。但ro.debuggable无法通过setprop工具设置。有两种方法：</p>
+<p>第一种情况相对简单，adb工具有一个<code>adb root</code> 命令，用于打开一个root shell。但如果你直接使用会提示<code>adbd cannot run as root in production builds</code> ，这时你需要修改Android系统的ro.debuggable属性为1，让系统认为自己在调试开发模式。但ro.debuggable无法通过setprop工具设置。有两种方法：</p>
 
 <ol>
   <li>通过<a href="https://github.com/wuhx/setpropex">setpropex</a>工具直接修改init内存的方式修改ro.debuggable属性。</li>
-  <li>修改<a href="http://android-dls.com/wiki/index.php?title=HOWTO:_Unpack%2C_Edit%2C_and_Re-Pack_Boot_Images">boot image</a>中设置ro.debuggable属性的配置文件.</li>
+  <li>修改<a href="http://android-dls.com/wiki/index.php?title=HOWTO:_Unpack%2C_Edit%2C_and_Re-Pack_Boot_Images">boot image</a>中设置ro.debuggable属性的配置文件，重新打包后用fastboot工具更新boot。</li>
 </ol>
 
 <p>这两种方法都比较复杂，所以就有了一个第三方工具<a href="https://play.google.com/store/apps/details?id=eu.chainfire.adbd&amp;hl=zh">adbd Insecure</a>，（ps：它的作者也是SuperSu的作者Chainfire）。这个工具的原理是用一个修改过的adbd替换掉原有adbd，从而跳过ro.debuggable属性检查（我猜：）。</p>
@@ -107,7 +109,7 @@
   <li>adbd服务进程。运行在手机端，代表Android系统和adb客户端交互。包括提供shell给用户，所以我们要获取root权限的shell需要先过它这一关。</li>
 </ol>
 
-<p>当然还有一种获取root shell的方式是，用<code class="highlighter-rouge">adb shell</code> 命令开启一个普通权限的shell后，执行su（刷SuperSu后，会安装到系统路径）命令，提权到root用户。但这样有个缺点，<code class="highlighter-rouge">adb push</code> <code class="highlighter-rouge">adb pull</code>这些命令的权限都不是root，拷贝文件会非常不方便。</p>
+<p>当然还有一种获取root shell的方式是，用<code>adb shell</code> 命令开启一个普通权限的shell后，执行su（刷SuperSu后，会安装到系统路径）命令，提权到root用户。但这样有个缺点，<code>adb push</code> <code>adb pull</code>这些命令的权限都不是root，拷贝文件会非常不方便。</p>
 
 <p>SuperSu的主要作用是提供第三方App的Root权限管理，具体就是，第三方App想使用root权限时，SuperSu弹出一个对话框，由用户确认是否给予root权限。以此提供一个相对安全的环境。</p>
 
@@ -133,10 +135,9 @@
 
 <p><a href="https://wiki.cyanogenmod.org/w/All_About_Recovery_Images">https://wiki.cyanogenmod.org/w/All_About_Recovery_Images</a></p>
 
-
 	
 	<!-- duoshuo box -->
-	<div class="ds-thread" data-thread-key="/2016/05/30/understand-android-rooting" data-title="从一个程序员的角度理解Android的刷机和Rooting" data-url="xun.im/2016/05/30/understand-android-rooting/"></div>
+	<div class="ds-thread" data-thread-key="/2016/05/30/understand-android-rooting" data-title="理解Android的刷机和Rooting" data-url="xun.im/2016/05/30/understand-android-rooting/"></div>
 	<!-- duoshuo box end -->
 	
 </article>
