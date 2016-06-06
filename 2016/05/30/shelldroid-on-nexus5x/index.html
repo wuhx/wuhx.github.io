@@ -56,15 +56,15 @@
 
   <h5 id="android-os-x-">安装Android系统工具箱 （OS X 系统）</h5>
 
-<p><code>brew install android-platform-tools</code></p>
+<p><code class="highlighter-rouge">brew install android-platform-tools</code></p>
 
 <h5 id="nexus-5x">打开Nexus 5X的调试模式</h5>
 
-<p>在Settings -&gt; About Phone -&gt; Build number上连续点击，直到提示以进入开发者模式。USB接上电脑，在手机上按提示授权调试。此时，输入<code>dab devices</code>应能显示Nexus 5x设备。</p>
+<p>在Settings -&gt; About Phone -&gt; Build number上连续点击，直到提示以进入开发者模式。USB接上电脑，在手机上按提示授权调试。此时，输入<code class="highlighter-rouge">dab devices</code>应能显示Nexus 5x设备。</p>
 
 <h5 id="bootloader">解锁bootloader</h5>
 
-<p><code>adb reboot bootloader</code>第一次进入bootloader模式会提示你解锁bootloader，按提示操作即可。</p>
+<p><code class="highlighter-rouge">adb reboot bootloader</code>第一次进入bootloader模式会提示你解锁bootloader，按提示操作即可。</p>
 
 <h5 id="twrp-recovery">刷TWRP Recovery系统</h5>
 
@@ -73,19 +73,20 @@
   <li>进入bootloader，并刷recovery。</li>
 </ol>
 
-<pre><code class="language-shell">adb reboot bootloader
+<div class="highlighter-rouge"><pre class="highlight"><code>adb reboot bootloader
 fastboot flash recovery twrp.img
 </code></pre>
+</div>
 
 <p>提示成功后，不要重启，此时应还在bootloader模式，按音量键，选择Recovery模式，并按电源键进入，否则刚刷的Recovery系统会被覆盖还原，需再来一遍。</p>
 
-<p>在TWRP下，adb各种命令都是支持的，这是一个非常强大的功能。比如执行<code>adb shell</code> 即可获取一个root权限的shell，这个shell比一般的root shell权限更大，因为此时我们在独立的Recovery系统中，执行<code>mount system</code> 加载Android系统的系统盘后，可以对其进行任何修改，包括把整个Android系统删了，所以需要特别小心。SuperSu和Xposed的安装包即是在这种模式下进行批量修改的。</p>
+<p>在TWRP下，adb各种命令都是支持的，这是一个非常强大的功能。比如执行<code class="highlighter-rouge">adb shell</code> 即可获取一个root权限的shell，这个shell比一般的root shell权限更大，因为此时我们在独立的Recovery系统中，执行<code class="highlighter-rouge">mount system</code> 加载Android系统的系统盘后，可以对其进行任何修改，包括把整个Android系统删了，所以需要特别小心。SuperSu和Xposed的安装包即是在这种模式下进行批量修改的。</p>
 
 <h5 id="supersu">安装SuperSu</h5>
 
 <ol>
   <li><a href="https://download.chainfire.eu/supersu">下载SuperSu</a> 另存为supersu.zip</li>
-  <li>用adb传送到手机上的/sdcard目录，<code>adb push supersu.zip /sdcard</code></li>
+  <li>用adb传送到手机上的/sdcard目录，<code class="highlighter-rouge">adb push supersu.zip /sdcard</code></li>
   <li>在TWRP的主界面，选择Install，浏览文件系统选择supersu.zip，滑动安装。</li>
 </ol>
 
@@ -94,7 +95,7 @@ fastboot flash recovery twrp.img
 <ol>
   <li><a href="http://dl-xda.xposed.info/framework/sdk23/arm64/">下载最新的Xposed版本</a></li>
   <li>安装方式同SuperSu。</li>
-  <li>SuperSu的安装包中包含了用户态App，Xposed的<a href="http://forum.xda-developers.com/showthread.php?t=3034811">用户态App</a>需要单独安装。重启手机进入正常Android系统后，执行<code>adb install XposedInstaller_3.0_alpha4.apk</code> </li>
+  <li>SuperSu的安装包中包含了用户态App，Xposed的<a href="http://forum.xda-developers.com/showthread.php?t=3034811">用户态App</a>需要单独安装。重启手机进入正常Android系统后，执行<code class="highlighter-rouge">adb install XposedInstaller_3.0_alpha4.apk</code></li>
 </ol>
 
 <h5 id="shelldroid">安装ShellDroid</h5>
@@ -102,15 +103,15 @@ fastboot flash recovery twrp.img
 <p>方法一</p>
 
 <ol>
-  <li><a href="https://github.com/wuhx/shelldroid/blob/master/target/android/output/shelldroid-debug.apk?raw=true">下载预编译版本</a> </li>
-  <li><code>adb install shelldroid-debug.apk</code> </li>
+  <li><a href="https://github.com/wuhx/shelldroid/blob/master/target/android/output/shelldroid-debug.apk?raw=true">下载预编译版本</a></li>
+  <li><code class="highlighter-rouge">adb install shelldroid-debug.apk</code></li>
 </ol>
 
 <p>方法二</p>
 
 <ol>
-  <li>克隆代码<code>git clone https://github.com/wuhx/shelldroid/</code></li>
-  <li>编译安装 <code>sbt apk</code></li>
+  <li>克隆代码<code class="highlighter-rouge">git clone https://github.com/wuhx/shelldroid/</code></li>
+  <li>编译安装 <code class="highlighter-rouge">sbt apk</code></li>
 </ol>
 
 <p>以上步骤大都是凭记忆写成，细节可能有出入，如有问题，欢迎反馈。</p>

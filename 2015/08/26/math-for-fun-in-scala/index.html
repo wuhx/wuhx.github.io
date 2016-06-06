@@ -105,31 +105,34 @@
 
 <p>triangular数按定义最直接的实现。</p>
 
-<pre><code class="language-scala">def triangulars(n: Int): Int = n match {
- case 1 =&gt; 1
- case num =&gt; triangulars(num-1) + num
-}
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">def</span> <span class="n">triangulars</span><span class="o">(</span><span class="n">n</span><span class="k">:</span> <span class="kt">Int</span><span class="o">)</span><span class="k">:</span> <span class="kt">Int</span> <span class="o">=</span> <span class="n">n</span> <span class="k">match</span> <span class="o">{</span>
+ <span class="k">case</span> <span class="mi">1</span> <span class="k">=&gt;</span> <span class="mi">1</span>
+ <span class="k">case</span> <span class="n">num</span> <span class="k">=&gt;</span> <span class="n">triangulars</span><span class="o">(</span><span class="n">num</span><span class="o">-</span><span class="mi">1</span><span class="o">)</span> <span class="o">+</span> <span class="n">num</span>
+<span class="o">}</span>
 </code></pre>
+</div>
 
 <p>如果是第一个数返回1，否则返回前一个triangular数和n之和，递归实现。</p>
 
 <h4 id="section-3">检查因子数：</h4>
 
-<pre><code class="language-scala">def divisisorsNum(n: Int) = {
-  (1 to n).filter( n % _ == 0).size 
-}
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">def</span> <span class="n">divisisorsNum</span><span class="o">(</span><span class="n">n</span><span class="k">:</span> <span class="kt">Int</span><span class="o">)</span> <span class="k">=</span> <span class="o">{</span>
+  <span class="o">(</span><span class="mi">1</span> <span class="n">to</span> <span class="n">n</span><span class="o">).</span><span class="n">filter</span><span class="o">(</span> <span class="n">n</span> <span class="o">%</span> <span class="k">_</span> <span class="o">==</span> <span class="mi">0</span><span class="o">).</span><span class="n">size</span> 
+<span class="o">}</span>
 </code></pre>
+</div>
 
 <p>n和所有小于n的数取模，并统计能被整除（取模结果为0）的数的个数，即为n的因子数。</p>
 
 <h4 id="ntriangle-">获取最小有n个因子的triangle 数：</h4>
 
-<pre><code class="language-scala">def euler12(n: Int) = {
-  Stream.from(1).map(triangulars).find(divisisorsNum(_) &gt; n)
-}
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">def</span> <span class="n">euler12</span><span class="o">(</span><span class="n">n</span><span class="k">:</span> <span class="kt">Int</span><span class="o">)</span> <span class="k">=</span> <span class="o">{</span>
+  <span class="nc">Stream</span><span class="o">.</span><span class="n">from</span><span class="o">(</span><span class="mi">1</span><span class="o">).</span><span class="n">map</span><span class="o">(</span><span class="n">triangulars</span><span class="o">).</span><span class="n">find</span><span class="o">(</span><span class="n">divisisorsNum</span><span class="o">(</span><span class="k">_</span><span class="o">)</span> <span class="o">&gt;</span> <span class="n">n</span><span class="o">)</span>
+<span class="o">}</span>
 </code></pre>
+</div>
 
-<p><code>Stream.from(1)</code>构建一个从1开始的整数列表，像整数的定义一样，这个列表是无穷大的，但其中的值在被引用之前并不存在于内存中，而是通过call by name实现惰性求值。可以理解为该列表是由一个head元素+动态计算出后续元素的函数组成。</p>
+<p><code class="highlighter-rouge">Stream.from(1)</code>构建一个从1开始的整数列表，像整数的定义一样，这个列表是无穷大的，但其中的值在被引用之前并不存在于内存中，而是通过call by name实现惰性求值。可以理解为该列表是由一个head元素+动态计算出后续元素的函数组成。</p>
 
 <p>通过对整数列表执行triangulars函数的map，生成一个triangular数组成的列表，同样，这个列表也是无穷大和惰性求值的。</p>
 
@@ -137,14 +140,15 @@
 
 <h4 id="section-4">运行：</h4>
 
-<pre><code class="language-scala">scala&gt; euler12(5)
-res4: Int = 28
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">scala</span><span class="o">&gt;</span> <span class="n">euler12</span><span class="o">(</span><span class="mi">5</span><span class="o">)</span>
+<span class="n">res4</span><span class="k">:</span> <span class="kt">Int</span> <span class="o">=</span> <span class="mi">28</span>
 
-scala&gt; euler12(50)
-res5: Int = 25200
+<span class="n">scala</span><span class="o">&gt;</span> <span class="n">euler12</span><span class="o">(</span><span class="mi">50</span><span class="o">)</span>
+<span class="n">res5</span><span class="k">:</span> <span class="kt">Int</span> <span class="o">=</span> <span class="mi">25200</span>
 
-scala&gt; euler12(500)
+<span class="n">scala</span><span class="o">&gt;</span> <span class="n">euler12</span><span class="o">(</span><span class="mi">500</span><span class="o">)</span>
 </code></pre>
+</div>
 
 <p>因子数较小的测试都没有问题，但在求本题的答案时（500个因子）挂死，原因是我们的程序效率太低，CPU算不过来了。</p>
 
@@ -154,25 +158,28 @@ scala&gt; euler12(500)
 
 <p>首先triangulars函数中，我们用到了递归，但不是尾递归，如若递归层数太深，会发生栈溢出。</p>
 
-<pre><code class="language-scala">scala&gt; triangulars(Int.MaxValue)
-java.lang.StackOverflowError
-  at .triangulars(&lt;console&gt;:12)
-  at .triangulars(&lt;console&gt;:12)
-  at .triangulars(&lt;console&gt;:12)
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">scala</span><span class="o">&gt;</span> <span class="n">triangulars</span><span class="o">(</span><span class="nc">Int</span><span class="o">.</span><span class="nc">MaxValue</span><span class="o">)</span>
+<span class="n">java</span><span class="o">.</span><span class="n">lang</span><span class="o">.</span><span class="nc">StackOverflowError</span>
+  <span class="n">at</span> <span class="o">.</span><span class="n">triangulars</span><span class="o">(&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">12</span><span class="o">)</span>
+  <span class="n">at</span> <span class="o">.</span><span class="n">triangulars</span><span class="o">(&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">12</span><span class="o">)</span>
+  <span class="n">at</span> <span class="o">.</span><span class="n">triangulars</span><span class="o">(&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">12</span><span class="o">)</span>
 </code></pre>
+</div>
 
 <p>改成尾递归</p>
 
-<pre><code class="language-scala">@tailrec
-def triangulars(n: Long, acc: Long = 1): Long = n match {
-  case 1 =&gt; acc
-  case num =&gt; triangulars(n-1, acc + n)
-}
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="nd">@tailrec</span>
+<span class="k">def</span> <span class="n">triangulars</span><span class="o">(</span><span class="n">n</span><span class="k">:</span> <span class="kt">Long</span><span class="o">,</span> <span class="n">acc</span><span class="k">:</span> <span class="kt">Long</span> <span class="o">=</span> <span class="mi">1</span><span class="o">)</span><span class="k">:</span> <span class="kt">Long</span> <span class="o">=</span> <span class="n">n</span> <span class="k">match</span> <span class="o">{</span>
+  <span class="k">case</span> <span class="mi">1</span> <span class="k">=&gt;</span> <span class="n">acc</span>
+  <span class="k">case</span> <span class="n">num</span> <span class="k">=&gt;</span> <span class="n">triangulars</span><span class="o">(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="o">,</span> <span class="n">acc</span> <span class="o">+</span> <span class="n">n</span><span class="o">)</span>
+<span class="o">}</span>
 </code></pre>
+</div>
 
-<pre><code class="language-scala">scala&gt; triangulars(Int.MaxValue)
-res2: Long = 2305843008139952128
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">scala</span><span class="o">&gt;</span> <span class="n">triangulars</span><span class="o">(</span><span class="nc">Int</span><span class="o">.</span><span class="nc">MaxValue</span><span class="o">)</span>
+<span class="n">res2</span><span class="k">:</span> <span class="kt">Long</span> <span class="o">=</span> <span class="mi">2305843008139952128</span>
 </code></pre>
+</div>
 
 <p>但改完后求本题答案还是挂死（其实跑几个小时还是能算出答案的），仔细观察，euler12获取triangular数列表的效率非常低，反复的对每个整数计算对应的triangular数，而这些计算有很大一部分是重复的，如triangulars(100)，其实就是triangulars(99)+100，不需要从1开始重新计算。</p>
 
@@ -182,50 +189,56 @@ res2: Long = 2305843008139952128
 
 <p>稍加推导，除第一个元素，第n个triangular数是前一个triangular数和n之和，直接用这个定义构成triangular数列表。</p>
 
-<pre><code class="language-scala">def triangulars(a: Int=1, n: Int=2): Stream[Int] = a #:: triangulars(a+n, n+1)
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">def</span> <span class="n">triangulars</span><span class="o">(</span><span class="n">a</span><span class="k">:</span> <span class="kt">Int</span><span class="o">=</span><span class="mi">1</span><span class="o">,</span> <span class="n">n</span><span class="k">:</span> <span class="kt">Int</span><span class="o">=</span><span class="mi">2</span><span class="o">)</span><span class="k">:</span> <span class="kt">Stream</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="n">a</span> <span class="o">#::</span> <span class="n">triangulars</span><span class="o">(</span><span class="n">a</span><span class="o">+</span><span class="n">n</span><span class="o">,</span> <span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="o">)</span>
 </code></pre>
+</div>
 
 <p>新的triangulars函数直接生成一个Stream，第一个参数作为递归的初始值，第二个参数标记index，每次递归时加1。</p>
 
-<pre><code class="language-scala">scala&gt; triangulars().take(10).force
-res6: scala.collection.immutable.Stream[Int] = Stream(1, 3, 6, 10, 15, 21, 28, 36, 45, 55)
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">scala</span><span class="o">&gt;</span> <span class="n">triangulars</span><span class="o">().</span><span class="n">take</span><span class="o">(</span><span class="mi">10</span><span class="o">).</span><span class="n">force</span>
+<span class="n">res6</span><span class="k">:</span> <span class="kt">scala.collection.immutable.Stream</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="nc">Stream</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="mi">3</span><span class="o">,</span> <span class="mi">6</span><span class="o">,</span> <span class="mi">10</span><span class="o">,</span> <span class="mi">15</span><span class="o">,</span> <span class="mi">21</span><span class="o">,</span> <span class="mi">28</span><span class="o">,</span> <span class="mi">36</span><span class="o">,</span> <span class="mi">45</span><span class="o">,</span> <span class="mi">55</span><span class="o">)</span>
 </code></pre>
+</div>
 
 <p>作为测试，从这个列表中取出10个数，并强制求值，查看结果。</p>
 
 <h4 id="section-7">更高效的检查因子数</h4>
 
-<p>前面的<code>divisisorsNum</code>函数检查因子数的方法是把n和所有小于n的整数都取模，过滤出其中能被除尽的数，这样效率显然太低了，尤其是取模运算很耗CPU。</p>
+<p>前面的<code class="highlighter-rouge">divisisorsNum</code>函数检查因子数的方法是把n和所有小于n的整数都取模，过滤出其中能被除尽的数，这样效率显然太低了，尤其是取模运算很耗CPU。</p>
 
 <p>更高效的方法是：只检查小于根号n的数，并将结果乘以2（每个能整除的因子必然还有一个大于根号n小于n的同伴）。</p>
 
-<pre><code class="language-scala">def divisisorNumbers(n: Int) = {
-  Stream.from(1).takeWhile(i =&gt; i*i &lt;= n)
-    .foldLeft(0)((acc, i) =&gt; if (n % i == 0) acc + 2 else acc)
-}
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">def</span> <span class="n">divisisorNumbers</span><span class="o">(</span><span class="n">n</span><span class="k">:</span> <span class="kt">Int</span><span class="o">)</span> <span class="k">=</span> <span class="o">{</span>
+  <span class="nc">Stream</span><span class="o">.</span><span class="n">from</span><span class="o">(</span><span class="mi">1</span><span class="o">).</span><span class="n">takeWhile</span><span class="o">(</span><span class="n">i</span> <span class="k">=&gt;</span> <span class="n">i</span><span class="o">*</span><span class="n">i</span> <span class="o">&lt;=</span> <span class="n">n</span><span class="o">)</span>
+    <span class="o">.</span><span class="n">foldLeft</span><span class="o">(</span><span class="mi">0</span><span class="o">)((</span><span class="n">acc</span><span class="o">,</span> <span class="n">i</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="k">if</span> <span class="o">(</span><span class="n">n</span> <span class="o">%</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span> <span class="n">acc</span> <span class="o">+</span> <span class="mi">2</span> <span class="k">else</span> <span class="n">acc</span><span class="o">)</span>
+<span class="o">}</span>
 </code></pre>
+</div>
 
 <p>这里用到了foldLeft，其作用是把Stream中所有的元素过一遍指定的函数，并将结果累加返回。</p>
 
-<p><code>foldLeft(0)((acc, i) =&gt; if (n % i == 0) acc + 2 else acc)</code> 第一个参数0是累加器的初始值，acc是累加器，i为Stream中的各个元素。</p>
+<p><code class="highlighter-rouge">foldLeft(0)((acc, i) =&gt; if (n % i == 0) acc + 2 else acc)</code> 第一个参数0是累加器的初始值，acc是累加器，i为Stream中的各个元素。</p>
 
 <h4 id="section-8">改进后的版本：</h4>
 
-<pre><code class="language-scala">def euler12(n: Int) = {
-  triangulars().find(divisisorNumbers(_) &gt; n)
-}
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">def</span> <span class="n">euler12</span><span class="o">(</span><span class="n">n</span><span class="k">:</span> <span class="kt">Int</span><span class="o">)</span> <span class="k">=</span> <span class="o">{</span>
+  <span class="n">triangulars</span><span class="o">().</span><span class="n">find</span><span class="o">(</span><span class="n">divisisorNumbers</span><span class="o">(</span><span class="k">_</span><span class="o">)</span> <span class="o">&gt;</span> <span class="n">n</span><span class="o">)</span>
+<span class="o">}</span>
 </code></pre>
+</div>
 
-<pre><code class="language-scala">scala&gt; euler12(500)
-res21: Option[Int] = Some(76576500)
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">scala</span><span class="o">&gt;</span> <span class="n">euler12</span><span class="o">(</span><span class="mi">500</span><span class="o">)</span>
+<span class="n">res21</span><span class="k">:</span> <span class="kt">Option</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="nc">Some</span><span class="o">(</span><span class="mi">76576500</span><span class="o">)</span>
 </code></pre>
+</div>
 
 <p>统计一下时间，花了4秒多得出结果。</p>
 
-<pre><code>scala&gt; time {euler12(500)}
+<div class="highlighter-rouge"><pre class="highlight"><code>scala&gt; time {euler12(500)}
 4 seconds 433 microseconds 155 milliseconds
 res24: Option[Int] = Some(76576500)
 </code></pre>
+</div>
 
 <p>已经到了可用级别了。但是:</p>
 
@@ -233,66 +246,62 @@ res24: Option[Int] = Some(76576500)
 
 <p>由<a href="http://primes.utm.edu/glossary/xpage/tau.html">数论的知识</a>，任何一个整数都能唯一的表示为几个素数的乘积。</p>
 
-<script type="math/tex; mode=display">
-n = p_1^{e_1}p_2^{e_2}\cdots p_s^{e^s}\quad
-</script>
+<script type="math/tex; mode=display">n = p_1^{e_1}p_2^{e_2}\cdots p_s^{e^s}\quad</script>
 
 <p>其中n为任意整数，p1-ps为素数。</p>
 
 <p><strong>如，4200可以表示成：</strong></p>
 
-<script type="math/tex; mode=display">
-4200 = 2^{3}3^{1}5^{2}7^1
-</script>
+<script type="math/tex; mode=display">4200 = 2^{3}3^{1}5^{2}7^1</script>
 
 <p>所以4200有 (3+1)(1+1)(2+1)(1+1) = 48个因子。</p>
 
 <p><strong>而triangle数可以表示为：</strong></p>
 
-<script type="math/tex; mode=display">
-triangles(n)=1+2+\cdots+n=\sum_{i=1}^n=\frac{n(n+1)}{2}.
-</script>
+<script type="math/tex; mode=display">triangles(n)=1+2+\cdots+n=\sum_{i=1}^n=\frac{n(n+1)}{2}.</script>
 
 <p>所以triangles(n)的因子数为：n的因子数乘以n+1的因子数，其中n或者n+1中偶数那个因子需要减掉一个因子(因为要除了2)，而n和n+1中必然有一个偶数。</p>
 
 <h4 id="section-10">代码实现</h4>
 
-<pre><code class="language-scala">/*
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="cm">/*
 * 计算n的因子个数，排除一次2因子
-* */
-def divisisorNumbers(n: Int, sum: Int, primes: Stream[Int])
-  : Int = primes match {
-  case head #:: tail if head &gt; n =&gt; sum
-  case prime #:: tail =&gt;
-    var number = n
-    var count = 0
-    while (number % prime == 0) {
-      number = number / prime
-      count = count + 1
-    }
-    if (prime == 2 &amp;&amp; count &gt; 0) {
-      count = count - 1
-    }
-    divisisorNumbers(number, sum * (count + 1), tail)
-}
-def euler12(n: Int) = {
-  val primeStreamInt  = Stream.from(1)
-    .filter(BigInt(_).isProbablePrime(15))
-  Stream.from(1)
-    .find(i =&gt; divisisorNumbers(i,1, primeStreamInt) *
-          divisisorNumbers(i + 1, 1,primeStreamInt) &gt; n)
-    .map(i =&gt; i * (i + 1) / 2)
-}
+* */</span>
+<span class="k">def</span> <span class="n">divisisorNumbers</span><span class="o">(</span><span class="n">n</span><span class="k">:</span> <span class="kt">Int</span><span class="o">,</span> <span class="n">sum</span><span class="k">:</span> <span class="kt">Int</span><span class="o">,</span> <span class="n">primes</span><span class="k">:</span> <span class="kt">Stream</span><span class="o">[</span><span class="kt">Int</span><span class="o">])</span>
+  <span class="k">:</span> <span class="kt">Int</span> <span class="o">=</span> <span class="n">primes</span> <span class="k">match</span> <span class="o">{</span>
+  <span class="k">case</span> <span class="n">head</span> <span class="o">#::</span> <span class="n">tail</span> <span class="k">if</span> <span class="n">head</span> <span class="o">&gt;</span> <span class="n">n</span> <span class="k">=&gt;</span> <span class="n">sum</span>
+  <span class="k">case</span> <span class="n">prime</span> <span class="o">#::</span> <span class="n">tail</span> <span class="k">=&gt;</span>
+    <span class="k">var</span> <span class="n">number</span> <span class="k">=</span> <span class="n">n</span>
+    <span class="k">var</span> <span class="n">count</span> <span class="k">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="o">(</span><span class="n">number</span> <span class="o">%</span> <span class="n">prime</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">number</span> <span class="k">=</span> <span class="n">number</span> <span class="o">/</span> <span class="n">prime</span>
+      <span class="n">count</span> <span class="k">=</span> <span class="n">count</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="o">}</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">prime</span> <span class="o">==</span> <span class="mi">2</span> <span class="o">&amp;&amp;</span> <span class="n">count</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">count</span> <span class="k">=</span> <span class="n">count</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="o">}</span>
+    <span class="n">divisisorNumbers</span><span class="o">(</span><span class="n">number</span><span class="o">,</span> <span class="n">sum</span> <span class="o">*</span> <span class="o">(</span><span class="n">count</span> <span class="o">+</span> <span class="mi">1</span><span class="o">),</span> <span class="n">tail</span><span class="o">)</span>
+<span class="o">}</span>
+<span class="k">def</span> <span class="n">euler12</span><span class="o">(</span><span class="n">n</span><span class="k">:</span> <span class="kt">Int</span><span class="o">)</span> <span class="k">=</span> <span class="o">{</span>
+  <span class="k">val</span> <span class="n">primeStreamInt</span>  <span class="k">=</span> <span class="nc">Stream</span><span class="o">.</span><span class="n">from</span><span class="o">(</span><span class="mi">1</span><span class="o">)</span>
+    <span class="o">.</span><span class="n">filter</span><span class="o">(</span><span class="nc">BigInt</span><span class="o">(</span><span class="k">_</span><span class="o">).</span><span class="n">isProbablePrime</span><span class="o">(</span><span class="mi">15</span><span class="o">))</span>
+  <span class="nc">Stream</span><span class="o">.</span><span class="n">from</span><span class="o">(</span><span class="mi">1</span><span class="o">)</span>
+    <span class="o">.</span><span class="n">find</span><span class="o">(</span><span class="n">i</span> <span class="k">=&gt;</span> <span class="n">divisisorNumbers</span><span class="o">(</span><span class="n">i</span><span class="o">,</span><span class="mi">1</span><span class="o">,</span> <span class="n">primeStreamInt</span><span class="o">)</span> <span class="o">*</span>
+          <span class="n">divisisorNumbers</span><span class="o">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="o">,</span> <span class="mi">1</span><span class="o">,</span><span class="n">primeStreamInt</span><span class="o">)</span> <span class="o">&gt;</span> <span class="n">n</span><span class="o">)</span>
+    <span class="o">.</span><span class="n">map</span><span class="o">(</span><span class="n">i</span> <span class="k">=&gt;</span> <span class="n">i</span> <span class="o">*</span> <span class="o">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="o">)</span> <span class="o">/</span> <span class="mi">2</span><span class="o">)</span>
+<span class="o">}</span>
 </code></pre>
+</div>
 
 <p>代码中用到的primeStreamInt是利用JDK的isProbablePrime函数过滤出的素数列表，用于查找因子，算是一个小cheat。</p>
 
 <p>统计时间：性能提高到了毫秒级，但是我还是更喜欢前面那个4秒多的实现：）</p>
 
-<pre><code>scala&gt; time(euler12(500))
+<div class="highlighter-rouge"><pre class="highlight"><code>scala&gt; time(euler12(500))
 0 seconds 156 microseconds 568 milliseconds
 res6: Option[Int] = Some(76576500)
 </code></pre>
+</div>
 
 <h3 id="section-11">结语</h3>
 

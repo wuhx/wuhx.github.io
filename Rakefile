@@ -19,11 +19,15 @@ task :new do |t, args|
   end
 end
 
-task :publish do
+task :save do 
+  puts "save draft"
+  `git add . --all && git commit  -am 'update' && git push`
+end
+
+task :publish => [:save] do
   puts "git push to remote repo"
   `jekyll build`
   `cd _site && git add . --all && git commit -am 'update' && git push`
-  `git add . --all && git commit  -am 'update' && git push`
 end
 
 

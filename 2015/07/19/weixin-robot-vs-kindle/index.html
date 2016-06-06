@@ -55,25 +55,25 @@
   <h2>微信你的Kindle：记录我的第一个Web项目</h2>
 
   <ul id="markdown-toc">
-  <li><a href="#section">一：实现了什么</a></li>
-  <li><a href="#section-1">二：为什么要做这个</a></li>
-  <li><a href="#section-2">三：用到的技术</a>    <ul>
-      <li><a href="#scalaakka">1  关于Scala和Akka</a></li>
-      <li><a href="#section-3">2  关于数据库</a></li>
-      <li><a href="#section-4">3  关于爬虫</a>        <ul>
-          <li><a href="#section-5">爬取网页类型</a></li>
-          <li><a href="#section-6">文档的生成</a></li>
+  <li><a href="#section" id="markdown-toc-section">一：实现了什么</a></li>
+  <li><a href="#section-1" id="markdown-toc-section-1">二：为什么要做这个</a></li>
+  <li><a href="#section-2" id="markdown-toc-section-2">三：用到的技术</a>    <ul>
+      <li><a href="#scalaakka" id="markdown-toc-scalaakka">1  关于Scala和Akka</a></li>
+      <li><a href="#section-3" id="markdown-toc-section-3">2  关于数据库</a></li>
+      <li><a href="#section-4" id="markdown-toc-section-4">3  关于爬虫</a>        <ul>
+          <li><a href="#section-5" id="markdown-toc-section-5">爬取网页类型</a></li>
+          <li><a href="#section-6" id="markdown-toc-section-6">文档的生成</a></li>
         </ul>
       </li>
-      <li><a href="#section-7">4  关于微信机器人</a>        <ul>
-          <li><a href="#section-8">功能：</a></li>
-          <li><a href="#section-9">稳定性：</a></li>
+      <li><a href="#section-7" id="markdown-toc-section-7">4  关于微信机器人</a>        <ul>
+          <li><a href="#section-8" id="markdown-toc-section-8">功能：</a></li>
+          <li><a href="#section-9" id="markdown-toc-section-9">稳定性：</a></li>
         </ul>
       </li>
     </ul>
   </li>
-  <li><a href="#section-10">四： 总结</a>    <ul>
-      <li><a href="#section-11">附：</a></li>
+  <li><a href="#section-10" id="markdown-toc-section-10">四： 总结</a>    <ul>
+      <li><a href="#section-11" id="markdown-toc-section-11">附：</a></li>
     </ul>
   </li>
 </ul>
@@ -110,7 +110,7 @@
 <ul>
   <li>主体架构：   Scala &amp; Akka</li>
   <li>数据库：       ElasticSearch</li>
-  <li>爬虫：           Jsoup &amp; webdriver + phantomjs </li>
+  <li>爬虫：           Jsoup &amp; webdriver + phantomjs</li>
   <li>邮件服务：   AWS Mail &amp; MailGun</li>
   <li>日志和监控：Logstash+Kibana+ElasticSearch</li>
   <li>微信机器人：webdriver + phantomjs + web微信</li>
@@ -119,7 +119,7 @@
 
 <h4 id="scalaakka">1  关于Scala和Akka</h4>
 
-<p>neveread.com有三个模块组成，<code>微信机器人</code> <code>爬虫</code> <code>邮件服务</code>，他们通过<a href="http://doc.akka.io/docs/akka/snapshot/common/cluster.html">akka cluster</a>协作，由AKKA提供位置无关性，可以运行在一台服务器上，也可以创建多个实例分布在多台服务器上。</p>
+<p>neveread.com有三个模块组成，<code class="highlighter-rouge">微信机器人</code> <code class="highlighter-rouge">爬虫</code> <code class="highlighter-rouge">邮件服务</code>，他们通过<a href="http://doc.akka.io/docs/akka/snapshot/common/cluster.html">akka cluster</a>协作，由AKKA提供位置无关性，可以运行在一台服务器上，也可以创建多个实例分布在多台服务器上。</p>
 
 <p>在选择scala+akka之前考察过Erlang，非常喜欢这门语言，特别是它的<a href="http://erlang.org/doc/reference_manual/patterns.html">Pattern Matching</a>，<a href="http://www.erlang.org/doc/programming_examples/list_comprehensions.html">List Comprehensions</a> 让我大开眼界，以及OTP中的Actor概念。但最终放弃是因为几个缺点（我认为的）：</p>
 
