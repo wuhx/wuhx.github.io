@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!-- meta information -->
+<meta charset="utf-8">
+<meta name="description" 
+      content="定时器用于定时驱动Feed或Action的执行，其内容是一个Cron表达式。所有需要用到定时器的Feed或者Action会在其设置页面有一个日历图标，点击即可设置。定时时间可以精确到秒，但后端会限制两次运行的最小间隔为5分钟。Cron..." >
+<meta name="author" content="wuhx">
+
+<!-- Enable responsiveness on mobile devices-->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+<!-- title -->
+<title>定时器设置 &middot; Not my idea</title>
+
+<!-- icons -->
+<link rel="shortcut icon" href="/public/images/favicon.ico" />
+
+<!-- stylesheets -->
+<link rel="stylesheet" href="/public/css/responsive.gs.12col.css">
+<link rel="stylesheet" href="/public/css/animate.min.css">
+<link rel="stylesheet" href="/public/css/main.css">
+
+<!-- Google fonts -->
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,400italic&subset=latin-ext">
+
+
+
+<!-- feed links -->
+<link rel="alternate" href="xun.im/feed.xml" type="application/rss+xml" title="">
+
+  </head>
+  <body>
+    <div class="container azul">
+      <header class="top row gutters">
+        <div class="col span_2 center">
+          <!-- TODO: add baseurl to the logo link -->
+          <a href="xun.im" id="logo" title="Not my idea"
+             style="background-image: url(/public/images/logo.png);"></a>
+        </div>
+        <nav class="col span_10 top-navbar">
+  
+  <a href="/" title="Home"
+     >Home</a>
+  
+  <a href="/about" title="About"
+     >About</a>
+  
+</nav>
+
+      </header>
+
+      <article class="single row gutters">
+  <time class="published" datetime="2017-04-23">23 April 2017</time>
+  <h2>定时器设置</h2>
+
+  <p>定时器用于定时驱动Feed或Action的执行，其内容是一个Cron表达式。</p>
+
+<p>所有需要用到定时器的Feed或者Action会在其设置页面有一个日历图标，点击即可设置。定时时间可以精确到秒，但后端会限制两次运行的最小间隔为5分钟。</p>
+
+<p>Cron表达式格式请参照 <a href="http://www.quartz-scheduler.org/documentation/quartz-2.1.x/tutorials/crontrigger.html">quartz文档</a>。</p>
+
+<p>注意事项：</p>
+
+<ol>
+  <li>选择输入框只是辅助输入，生成Cron表达式可直接编辑。</li>
+  <li>日期和星期不能同时设置，其中一项必须选择「忽略」。</li>
+  <li>Special characters只支持「*」「?」「,」和「-」</li>
+  <li>表达式元素不包含「年」选项</li>
+</ol>
+
+<p><img src="http://defyun.oss-cn-shanghai.aliyuncs.com/blog/misc/cron.png" alt="设置图标" /></p>
+
+<p><img src="http://defyun.oss-cn-shanghai.aliyuncs.com/blog/misc/cronui.png" alt="设置界面" /></p>
+
+	
+	<!-- duoshuo box -->
+	<div class="ds-thread" data-thread-key="/2017/04/23/setting-cron" data-title="定时器设置" data-url="xun.im/2017/04/23/setting-cron/"></div>
+	<!-- duoshuo box end -->
+	
+</article>
+
+
+      <footer>
+        <p>
+          This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-nd/2.5/deed.zh">署名-非商业性使用-禁止演绎 </a>License.
+        </p>
+      </footer>
+    </div>
+
+    <!-- scripts -->
+		<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+		
+	<link rel="stylesheet" href="/public/css/tomorrow.css">
+	<script src="/public/js/highlight.pack.js"></script>
+	<script>hljs.initHighlightingOnLoad();</script>
+	
+    <script src="/public/js/jquery.min.js"></script>
+    <script src="/public/js/jquery.fitvids.js"></script>
+    <script>
+      $(document).ready(function(){
+        $("article").fitVids();
+      });
+    </script>
+		
+		<!-- google analystics for xun.im -->
+		<script>
+		  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+		  ga('create', 'UA-31449466-1', 'auto');
+		  ga('send', 'pageview');
+		</script>
+		<!-- baidu site for xun.im -->
+		<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "//hm.baidu.com/hm.js?b62786d99652b034add78b003086816f";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+		</script>
+		<!-- duoshuo common -->
+		<script type="text/javascript">
+		var duoshuoQuery = {short_name:"5site"};
+			(function() {
+				var ds = document.createElement('script');
+				ds.type = 'text/javascript';ds.async = true;
+				ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+				ds.charset = 'UTF-8';
+				(document.getElementsByTagName('head')[0] 
+				 || document.getElementsByTagName('body')[0]).appendChild(ds);
+			})();
+			</script>
+		<!-- duoshuo end -->
+		
+		
+  </body>
+</html>

@@ -6,1107 +6,326 @@
     <atom:link href="xun.im/feed.xml" rel="self" type="application/rss+xml" />
     <description>personal blog, scala, akka,</description>
     <language>en-us</language>
-    <pubDate>Mon, 06 Jun 2016 23:03:32 +0800</pubDate>
-    <lastBuildDate>Mon, 06 Jun 2016 23:03:32 +0800</lastBuildDate>
+    <pubDate>Sun, 23 Apr 2017 23:46:53 +0800</pubDate>
+    <lastBuildDate>Sun, 23 Apr 2017 23:46:53 +0800</lastBuildDate>
 
     
       <item>
-        <title>自己动手写VPN</title>
-        <link>xun.im/2016/06/02/write-your-own-vpn/</link>
-        <pubDate>Thu, 02 Jun 2016 00:00:00 +0800</pubDate>
+        <title>模拟浏览器设置</title>
+        <link>xun.im/2017/04/23/setting-zhizhu/</link>
+        <pubDate>Sun, 23 Apr 2017 00:00:00 +0800</pubDate>
         <author>wuhx</author>
-        <description>&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;brew install tuntap
-sudo cp -pR /usr/local/Cellar/tuntap/20111101/Library/Extensions/tap.kext /Library/Extensions/
-sudo cp -pR /usr/local/Cellar/tuntap/20111101/Library/Extensions/tun.kext /Library/Extensions/
-sudo chown -R root:wheel /Library/Extensions/tap.kext
-sudo chown -R root:wheel /Library/Extensions/tun.kext
-sudo touch /Library/Extensions/
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+        <description>&lt;p&gt;所有需要用到模拟浏览器的Feed或者Action会在其设置页面有一个IE浏览器图标，点击即可设置。&lt;/p&gt;
 
-&lt;p&gt;安装成功后，执行&lt;code class=&quot;highlighter-rouge&quot;&gt;ls /dev|grep tun&lt;/code&gt; 会显示dev目录下多了很多tunX设备。&lt;/p&gt;
-
-&lt;h3 id=&quot;tcp&quot;&gt;了解TCP协议&lt;/h3&gt;
-
-&lt;h4 id=&quot;section&quot;&gt;协议层面&lt;/h4&gt;
-
-&lt;p&gt;学过计算机网络的同学都知道TCP/IP协议的OSI模型。和编程相关的主要是这几层：&lt;/p&gt;
+&lt;p&gt;可以设置的内容包括：&lt;/p&gt;
 
 &lt;ol&gt;
-  &lt;li&gt;数据链路层。包含目标机器的MAC地址，负责在两台设备之间传递数据包。&lt;/li&gt;
-  &lt;li&gt;网络层。包含目标机器的IP地址，负责路由，确定数据包的下一站是哪台设备。&lt;/li&gt;
-  &lt;li&gt;传输层。包含端口号，确定数据发给哪个进程。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;UserAgent&lt;/strong&gt; ：设置浏览器UA，选择预设的UA或自行输入。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;最大执行时间&lt;/strong&gt; ：设置一次爬取最长耗时，执行时间超过这个值将返回超时失败。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;使用JavaScript&lt;/strong&gt; ：加载页面时执行包含的JavaScript代码，如无需要可关闭降低资源消耗。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;加载图片&lt;/strong&gt; ：加载网页中的图片，如无需要可关闭降低资源消耗。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Http Header&lt;/strong&gt; ：发起的Http请求将附带的HTTP头，可包含Cookie等信息。格式为冒号分隔的多行Key和Value，可直接从Chrome控制台拷贝。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;代理&lt;/strong&gt; : 设置代理，支持Socks和HTTP代理。&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;p&gt;TCP协议的复杂之处主要在于处理网络的不稳定性，需要在数据包的投递顺序，可靠性，网络拥堵时的拥塞控制，流控制等方面做大量工作。但作为网络上层开发者，这些都是基础设施，只需大概了解基本原理就可以了。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/misc/zhizhuicon.png&quot; alt=&quot;设置图标&quot; /&gt;&lt;/p&gt;
 
-&lt;h4 id=&quot;section-1&quot;&gt;数据包流程&lt;/h4&gt;
-
-&lt;p&gt;NIC（网卡）接收到数据包后，通过DMA硬件机制直接把数据包写入内存，并适时（&lt;a href=&quot;http://lwn.net/2002/0321/a/napi-howto.php3&quot;&gt;NAPI&lt;/a&gt;）通知CPU，CPU（经由Linux内核代码）再把数据包拷贝到内核空间。后续用户态程序要访问数据时（socket调用），通过Linux系统调用（如copy_to_user），把数据从内核态拷贝到用户态，整个网络通信过程存在大量系统调用和数据拷贝，影响了Linux TCP/IP协议栈的性能。&lt;/p&gt;
-
-&lt;p&gt;但其实这个消耗是可以避免的，为了解决这个问题有两种方式:&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;零拷贝技术（zero copy networking）。通过&lt;a href=&quot;https://www.kernel.org/doc/Documentation/networking/packet_mmap.txt&quot;&gt;packet mmap&lt;/a&gt;等方式把内核内存映射到用户空间，避免内存拷贝。&lt;/li&gt;
-  &lt;li&gt;把整个TCP/IP协议栈放到用户态来实现（kernel bypass）。如cloudflare的&lt;a href=&quot;https://blog.cloudflare.com/kernel-bypass/&quot;&gt;方案&lt;/a&gt;。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h3 id=&quot;section-2&quot;&gt;链接&lt;/h3&gt;
-
-&lt;p&gt;https://community.openvpn.net/openvpn/wiki/BridgingAndRouting&lt;/p&gt;
-
-&lt;p&gt;http://backreference.org/2010/03/26/tuntap-interface-tutorial/&lt;/p&gt;
-
-&lt;p&gt;http://www.ibm.com/developerworks/cn/linux/l-tuntap/&lt;/p&gt;
-
-&lt;p&gt;http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/Documentation/networking/tuntap.txt?id=HEAD&lt;/p&gt;
-
-&lt;p&gt;https://sourceforge.net/p/tuntaposx/code/ci/master/tree/tuntap/&lt;/p&gt;
-
-&lt;p&gt;https://github.com/gregnietsky/simpletun　&lt;/p&gt;
-
-&lt;p&gt;https://github.com/clowwindy/ShadowVPN/wiki/Compared-to-Shadowsocks-and-OpenVPN&lt;/p&gt;
-
-&lt;p&gt;https://github.com/neilalexander/sigmavpn-android&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://android.googlesource.com/platform/development/+/master/samples/ToyVpn&quot;&gt;https://android.googlesource.com/platform/development/+/master/samples/ToyVpn&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;https://hengyunabc.github.io/something-about-science-surf-the-internet/&lt;/p&gt;
-
-&lt;p&gt;http://www.tcpdump.org/pcap.html&lt;/p&gt;
-
-&lt;p&gt;https://github.com/kaitoy/pcap4j&lt;/p&gt;
-
-&lt;p&gt;https://github.com/kaitoy/pcap4j/blob/v1/www/Packet.md&lt;/p&gt;
-
-&lt;p&gt;Multiqueue support in tun/tap  https://lwn.net/Articles/459270/&lt;/p&gt;
-
-&lt;p&gt;Page-Flip Technology for use within the Linux Networking Stack http://www.landley.net/kdocs/ols/2004/ols2004v2-pages-175-180.pdf&lt;/p&gt;
-
-&lt;p&gt;https://github.com/wallnerryan/floodlight/blob/master/src/main/java/net/floodlightcontroller/packet/IPv4.java#L289&lt;/p&gt;
-
-&lt;p&gt;https://github.com/andiwand/packetsocket/blob/master/src/at/stefl/packetsocket/pdu/IPv4Packet.java&lt;/p&gt;
-
-&lt;p&gt;https://kaitoy.github.io/pcap4j/javadoc/latest/en/org/pcap4j/packet/IpV4Packet.Builder.html&lt;/p&gt;
-
-&lt;p&gt;https://gist.github.com/wuhx/0c6712904b080769123f&lt;/p&gt;
-
-&lt;p&gt;http://www.cubrid.org/blog/dev-platform/understanding-tcp-ip-network-stack/&lt;/p&gt;
-
-&lt;p&gt;https://www.usenix.org/conference/nsdi14/technical-sessions/presentation/jeong&lt;/p&gt;
-
-&lt;p&gt;Layer-3 forwarding&lt;/p&gt;
-
-&lt;p&gt;http://www.pearsonitcertification.com/articles/article.aspx?p=2434069&lt;/p&gt;
-
-&lt;p&gt;Why TCP Over TCP Is A Bad Idea&lt;/p&gt;
-
-&lt;p&gt;http://sites.inka.de/bigred/devel/tcp-tcp.html&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/misc/zhizhu.png&quot; alt=&quot;设置图标&quot; /&gt;&lt;/p&gt;
 </description>
       </item>
     
       <item>
-        <title>理解Android的刷机和Rooting</title>
-        <link>xun.im/2016/05/30/understand-android-rooting/</link>
-        <pubDate>Mon, 30 May 2016 00:00:00 +0800</pubDate>
+        <title>定时器设置</title>
+        <link>xun.im/2017/04/23/setting-cron/</link>
+        <pubDate>Sun, 23 Apr 2017 00:00:00 +0800</pubDate>
         <author>wuhx</author>
-        <description>&lt;p&gt;相对于IOS，Andorid系统的最大优势是它的开放性，但这种开放性是一把双刃剑，它在给用户更多选择的同时，也让恶意软件有了更多的作恶途径。理解Android的运行机制，不仅能帮助我们更好的使用Android，也能保护我们不受坏软件的欺负。以下是我对刷机和Rooting的理解，以记录为主，有不对的地方欢迎指出。&lt;/p&gt;
+        <description>&lt;p&gt;定时器用于定时驱动Feed或Action的执行，其内容是一个Cron表达式。&lt;/p&gt;
 
-&lt;p&gt;一台安卓手机主要有3个独立的软件系统：bootloader，Android主系统，recovery系统。&lt;/p&gt;
+&lt;p&gt;所有需要用到定时器的Feed或者Action会在其设置页面有一个日历图标，点击即可设置。定时时间可以精确到秒，但后端会限制两次运行的最小间隔为5分钟。&lt;/p&gt;
 
-&lt;p&gt;开机时，bootloader最先启动，并可选择加载Android还是recovery系统。可以理解为PC的BIOS。&lt;/p&gt;
+&lt;p&gt;Cron表达式格式请参照 &lt;a href=&quot;http://www.quartz-scheduler.org/documentation/quartz-2.1.x/tutorials/crontrigger.html&quot;&gt;quartz文档&lt;/a&gt;。&lt;/p&gt;
 
-&lt;p&gt;Android主系统是最复杂的部分，它又分成boot，linux内核，Dalvik/ART支撑起来的App运行环境和各种App。&lt;/p&gt;
-
-&lt;p&gt;recovery系统主要用于Android主系统的升级，故障修复恢复出厂设置等。有点类似Windows下的安全模式，但和安全模式不同，recovery是个安装在单独分区上的独立系统，能在Andorid主系统没有运行的情况下独立运行，所以可以修改主系统上的任何文件。&lt;/p&gt;
-
-&lt;p&gt;因为系统运行时不能修改自身的一些核心部件，所以Android要升级系统一般有两种方式：&lt;/p&gt;
+&lt;p&gt;注意事项：&lt;/p&gt;
 
 &lt;ol&gt;
-  &lt;li&gt;在bootloader模式下，通过fastboot工具直接写手机的flash芯片，这种方式功能最为强大，不仅能修改Android或recovery的系统文件，甚至还能给flash芯片重新分区，格式化等都不在话下。缺点是功能比较raw，不理解文件系统，要单独修改某个文件会比较麻烦。&lt;/li&gt;
-  &lt;li&gt;在recovery模式下，mount主系统分区，进行文件读写。第三方工具刷机和OTA系统升级都是用这种方式。AOSP（安卓原生代码）自带的recovery系统是个功能非常简单的系统，除了配合OTA升级，基本没有其他功能。所以产生了第三方recovery系统，最著名的是&lt;a href=&quot;https://twrp.me/&quot;&gt;TWRP&lt;/a&gt;，另外&lt;a href=&quot;http://www.cyanogenmod.org/&quot;&gt;CyanogenMod&lt;/a&gt;的recovery系统功能相对完善，也自成一派。&lt;/li&gt;
+  &lt;li&gt;选择输入框只是辅助输入，生成Cron表达式可直接编辑。&lt;/li&gt;
+  &lt;li&gt;日期和星期不能同时设置，其中一项必须选择「忽略」。&lt;/li&gt;
+  &lt;li&gt;Special characters只支持「*」「?」「,」和「-」&lt;/li&gt;
+  &lt;li&gt;表达式元素不包含「年」选项&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;p&gt;所以，安卓刷机有以下几种类型：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/misc/cron.png&quot; alt=&quot;设置图标&quot; /&gt;&lt;/p&gt;
 
-&lt;ol&gt;
-  &lt;li&gt;正常的系统升级（OTA）。安卓系统检测到有新的版本，下载新版本到本地flash，提示用户重启手机后进入recovery系统，解压新版本文件，覆盖到原系统分区，重启手机，进入新系统。&lt;/li&gt;
-  &lt;li&gt;fastboot升级，以flash分区为单位，升级boot，recovery等各个部件。如&lt;code class=&quot;highlighter-rouge&quot;&gt;fastboot flash recovery twrp.img&lt;/code&gt; &lt;code class=&quot;highlighter-rouge&quot;&gt;fastboot flash boot boot.img&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;刷recovery系统（如TWRP），然后通过recovery系统随意刷任何第三方Rom，或者修改一些系统关键文件，如Xposed会替换掉安卓核心进程Zygote，SuperSu会修改BootImage。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;第三种方式的自由度是最高的，但受制与厂商的具体实现，无论是recovery系统还是bootloader都可能会对安卓系统包进行签名验证，拒绝安装非原厂系统。因为Rocovery系统本身可以在bootloader下刷，所以要破解手机刷第三方Rom的关键是bootloader是否被锁了。这方面，Google亲儿子Nexus系列是最方便的，一行命令&lt;code class=&quot;highlighter-rouge&quot;&gt;fastboot oem lock&lt;/code&gt;即可解锁bootloader，其他开发者友好的厂商如一加手机也支持该方法， Sony的&lt;a href=&quot;http://developer.sonymobile.com/unlockbootloader/&quot;&gt;Xperia&lt;/a&gt;需要邮件验证提供解锁码，&lt;a href=&quot;http://www.miui.com/unlock/&quot;&gt;小米&lt;/a&gt;也可申请解锁权限，但需mi帐号绑定，并有一些限制。而另外一些手机则需要等待破解漏洞。&lt;/p&gt;
-
-&lt;h5 id=&quot;rooting&quot;&gt;Rooting&lt;/h5&gt;
-
-&lt;p&gt;上面讲的都是刷机，而Rooting是指获取系统的最高权限。Android和普通Linux系统一样，有普通用户和root用户（用户ID为0），不一样的是Android系统为每个App生成了一个用户，从而更好的隔离各个App的权限。同时Android也引入了SeLinux，除了根据UID来检查权限外，App的行为还需符合SeLinux设定的规则，如普通App都属于untrusted_app分组，权限相对较小。可以用&lt;code class=&quot;highlighter-rouge&quot;&gt;adb shell logcat|grep audit&lt;/code&gt; 命令查看SeLinux消息，任何违反SeLinux规则的操作都会被记录下来，并会根据Selinux的状态决定是否阻止该操作。SeLinux有两种状态：enforce和permissive分别对应打开和关闭。可通过getenforce查看和setenforce（需root权限）设置。&lt;/p&gt;
-
-&lt;p&gt;获取Root权限有两种情况：&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;获取一个root shell。&lt;/li&gt;
-  &lt;li&gt;管理App的root权限申请。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;第一种情况相对简单，adb工具有一个&lt;code class=&quot;highlighter-rouge&quot;&gt;adb root&lt;/code&gt; 命令，用于打开一个root shell。但如果你直接使用会提示&lt;code class=&quot;highlighter-rouge&quot;&gt;adbd cannot run as root in production builds&lt;/code&gt; ，这时你需要修改Android系统的ro.debuggable属性为1，让系统认为自己在调试开发模式。但ro.debuggable无法通过setprop工具设置。有两种方法：&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;通过&lt;a href=&quot;https://github.com/wuhx/setpropex&quot;&gt;setpropex&lt;/a&gt;工具直接修改init内存的方式修改ro.debuggable属性。&lt;/li&gt;
-  &lt;li&gt;修改&lt;a href=&quot;http://android-dls.com/wiki/index.php?title=HOWTO:_Unpack%2C_Edit%2C_and_Re-Pack_Boot_Images&quot;&gt;boot image&lt;/a&gt;中设置ro.debuggable属性的配置文件，重新打包后用fastboot工具更新boot。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;这两种方法都比较复杂，所以就有了一个第三方工具&lt;a href=&quot;https://play.google.com/store/apps/details?id=eu.chainfire.adbd&amp;amp;hl=zh&quot;&gt;adbd Insecure&lt;/a&gt;，（ps：它的作者也是SuperSu的作者Chainfire）。这个工具的原理是用一个修改过的adbd替换掉原有adbd，从而跳过ro.debuggable属性检查（我猜：）。&lt;/p&gt;
-
-&lt;p&gt;顺便说一下adb这个工具，adb由三部分组成：&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;adb客户端，也就是我们输入adb命令调用的那个，运行在调试电脑上。&lt;/li&gt;
-  &lt;li&gt;adb服务端，负责和手机通信，提供数据链路的抽象，adb客户端无需考虑是通过USB线缆，还是TCP协议等其他方式和手机交互，也运行在调试电脑上。&lt;/li&gt;
-  &lt;li&gt;adbd服务进程。运行在手机端，代表Android系统和adb客户端交互。包括提供shell给用户，所以我们要获取root权限的shell需要先过它这一关。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;当然还有一种获取root shell的方式是，用&lt;code class=&quot;highlighter-rouge&quot;&gt;adb shell&lt;/code&gt; 命令开启一个普通权限的shell后，执行su（刷SuperSu后，会安装到系统路径）命令，提权到root用户。但这样有个缺点，&lt;code class=&quot;highlighter-rouge&quot;&gt;adb push&lt;/code&gt; &lt;code class=&quot;highlighter-rouge&quot;&gt;adb pull&lt;/code&gt;这些命令的权限都不是root，拷贝文件会非常不方便。&lt;/p&gt;
-
-&lt;p&gt;SuperSu的主要作用是提供第三方App的Root权限管理，具体就是，第三方App想使用root权限时，SuperSu弹出一个对话框，由用户确认是否给予root权限。以此提供一个相对安全的环境。&lt;/p&gt;
-
-&lt;p&gt;值得一提的是，SuperSu是一个闭源软件，作为一个开源系统上的最高权限软件，这简直有点不可思议，所以XDA上发起了一个&lt;a href=&quot;http://www.xda-developers.com/the-importance-of-open-source-in-root/&quot;&gt;SuperSu开源替代&lt;/a&gt;项目。&lt;/p&gt;
-
-&lt;p&gt;至于国内各大厂商推出的一键Root软件，基本都是利用了Android系统的提权漏洞，安全存疑，不建议使用，并且随着Android系统的完善这种漏洞会越来越少。&lt;/p&gt;
-
-&lt;h3 id=&quot;section&quot;&gt;相关链接&lt;/h3&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://su.chainfire.eu/&quot;&gt;How-To SU&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://twrp.me/&quot;&gt;TWRP&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&quot;http://cygery.com/wordpress/2014/06/29/android-l-selinux-root-apps/&quot;&gt;http://cygery.com/wordpress/2014/06/29/android-l-selinux-root-apps/&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&quot;http://trendblog.net/guide-to-android-rooting-custom-roms-apps/&quot;&gt;http://trendblog.net/guide-to-android-rooting-custom-roms-apps/&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://download.chainfire.eu/supersu&quot;&gt;https://download.chainfire.eu/supersu&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&quot;http://wiki.cyanogenmod.org/w/Devices&quot;&gt;http://wiki.cyanogenmod.org/w/Devices&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&quot;http://developer.sonymobile.com/unlockbootloader&quot;&gt;http://developer.sonymobile.com/unlockbootloader&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://wiki.cyanogenmod.org/w/Doc:_fastboot_intro&quot;&gt;https://wiki.cyanogenmod.org/w/Doc:_fastboot_intro&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://www.kingoapp.com/help/fastboot-mode.htm&quot;&gt;https://www.kingoapp.com/help/fastboot-mode.htm&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://wiki.cyanogenmod.org/w/All_About_Recovery_Images&quot;&gt;https://wiki.cyanogenmod.org/w/All_About_Recovery_Images&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/misc/cronui.png&quot; alt=&quot;设置界面&quot; /&gt;&lt;/p&gt;
 </description>
       </item>
     
       <item>
-        <title>在Nexus 5X上安装ShellDroid</title>
-        <link>xun.im/2016/05/30/shelldroid-on-nexus5x/</link>
-        <pubDate>Mon, 30 May 2016 00:00:00 +0800</pubDate>
+        <title>imhuman验证码识别</title>
+        <link>xun.im/2017/04/23/imhuman/</link>
+        <pubDate>Sun, 23 Apr 2017 00:00:00 +0800</pubDate>
         <author>wuhx</author>
-        <description>&lt;h5 id=&quot;android-os-x-&quot;&gt;安装Android系统工具箱 （OS X 系统）&lt;/h5&gt;
+        <description>&lt;p&gt;imhuman验证码识别的基本原理：&lt;/p&gt;
 
-&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;brew install android-platform-tools&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;将浏览器当前验证页面镜像到另外一个网址，然后通知用户（通过微信消息）在该镜像页面中操作，imhuman在后台记录用户操作并在真实网页上重放该操作。从而通过任何验证码的验证（因为操作者本来就是人类）。&lt;/p&gt;
 
-&lt;h5 id=&quot;nexus-5x&quot;&gt;打开Nexus 5X的调试模式&lt;/h5&gt;
+&lt;p&gt;具体应用可以参考：&lt;br /&gt;
+&lt;a href=&quot;/2017/04/23/example-12306/&quot;&gt;例6:12306车票购买&lt;/a&gt;&lt;br /&gt;
+&lt;a href=&quot;/2017/04/23/example-auto-weixin-mp/&quot;&gt;例7:微信公众号自动发文&lt;/a&gt;&lt;/p&gt;
 
-&lt;p&gt;在Settings -&amp;gt; About Phone -&amp;gt; Build number上连续点击，直到提示以进入开发者模式。USB接上电脑，在手机上按提示授权调试。此时，输入&lt;code class=&quot;highlighter-rouge&quot;&gt;dab devices&lt;/code&gt;应能显示Nexus 5x设备。&lt;/p&gt;
-
-&lt;h5 id=&quot;bootloader&quot;&gt;解锁bootloader&lt;/h5&gt;
-
-&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;adb reboot bootloader&lt;/code&gt;第一次进入bootloader模式会提示你解锁bootloader，按提示操作即可。&lt;/p&gt;
-
-&lt;h5 id=&quot;twrp-recovery&quot;&gt;刷TWRP Recovery系统&lt;/h5&gt;
+&lt;p&gt;一些镜像页面的例子：&lt;/p&gt;
 
 &lt;ol&gt;
-  &lt;li&gt;&lt;a href=&quot;https://dl.twrp.me/bullhead/twrp-3.0.2-0-bullhead.img.html&quot;&gt;下载 TWRP镜像&lt;/a&gt; 存为twrp.img&lt;/li&gt;
-  &lt;li&gt;进入bootloader，并刷recovery。&lt;/li&gt;
+  &lt;li&gt;微信公众号登录验证：收到imhuman验证通知消息后长按图片识别登录。&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;adb reboot bootloader
-fastboot flash recovery twrp.img
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;提示成功后，不要重启，此时应还在bootloader模式，按音量键，选择Recovery模式，并按电源键进入，否则刚刷的Recovery系统会被覆盖还原，需再来一遍。&lt;/p&gt;
-
-&lt;p&gt;在TWRP下，adb各种命令都是支持的，这是一个非常强大的功能。比如执行&lt;code class=&quot;highlighter-rouge&quot;&gt;adb shell&lt;/code&gt; 即可获取一个root权限的shell，这个shell比一般的root shell权限更大，因为此时我们在独立的Recovery系统中，执行&lt;code class=&quot;highlighter-rouge&quot;&gt;mount system&lt;/code&gt; 加载Android系统的系统盘后，可以对其进行任何修改，包括把整个Android系统删了，所以需要特别小心。SuperSu和Xposed的安装包即是在这种模式下进行批量修改的。&lt;/p&gt;
-
-&lt;h5 id=&quot;supersu&quot;&gt;安装SuperSu&lt;/h5&gt;
+&lt;p&gt;&lt;a href=&quot;https://defyun.oss-cn-shanghai.aliyuncs.com/imhuman.html#c435c895-2250-4918-92bb-4641665a5fb6&quot;&gt;https://defyun.oss-cn-shanghai.aliyuncs.com/imhuman.html#c435c895-2250-4918-92bb-4641665a5fb6&lt;/a&gt;&lt;/p&gt;
 
 &lt;ol&gt;
-  &lt;li&gt;&lt;a href=&quot;https://download.chainfire.eu/supersu&quot;&gt;下载SuperSu&lt;/a&gt; 另存为supersu.zip&lt;/li&gt;
-  &lt;li&gt;用adb传送到手机上的/sdcard目录，&lt;code class=&quot;highlighter-rouge&quot;&gt;adb push supersu.zip /sdcard&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;在TWRP的主界面，选择Install，浏览文件系统选择supersu.zip，滑动安装。&lt;/li&gt;
+  &lt;li&gt;极验证：拖动图片让拼图重合（只能在PC端操作）&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h5 id=&quot;xposed&quot;&gt;安装Xposed框架&lt;/h5&gt;
+&lt;p&gt;&lt;a href=&quot;https://defyun.oss-cn-shanghai.aliyuncs.com/imhuman.html#7b2a1485-b5f4-433e-ab30-e58e0966979f&quot;&gt;https://defyun.oss-cn-shanghai.aliyuncs.com/imhuman.html#7b2a1485-b5f4-433e-ab30-e58e0966979f&lt;/a&gt;&lt;/p&gt;
 
 &lt;ol&gt;
-  &lt;li&gt;&lt;a href=&quot;http://dl-xda.xposed.info/framework/sdk23/arm64/&quot;&gt;下载最新的Xposed版本&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;安装方式同SuperSu。&lt;/li&gt;
-  &lt;li&gt;SuperSu的安装包中包含了用户态App，Xposed的&lt;a href=&quot;http://forum.xda-developers.com/showthread.php?t=3034811&quot;&gt;用户态App&lt;/a&gt;需要单独安装。重启手机进入正常Android系统后，执行&lt;code class=&quot;highlighter-rouge&quot;&gt;adb install XposedInstaller_3.0_alpha4.apk&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;12306识图：点击正确图片。&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h5 id=&quot;shelldroid&quot;&gt;安装ShellDroid&lt;/h5&gt;
-
-&lt;p&gt;方法一&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;&lt;a href=&quot;https://github.com/wuhx/shelldroid/blob/master/target/android/output/shelldroid-debug.apk?raw=true&quot;&gt;下载预编译版本&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;adb install shelldroid-debug.apk&lt;/code&gt;&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;方法二&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;克隆代码&lt;code class=&quot;highlighter-rouge&quot;&gt;git clone https://github.com/wuhx/shelldroid/&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;编译安装 &lt;code class=&quot;highlighter-rouge&quot;&gt;sbt apk&lt;/code&gt;&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;以上步骤大都是凭记忆写成，细节可能有出入，如有问题，欢迎反馈。&lt;/p&gt;
-
+&lt;p&gt;&lt;a href=&quot;https://defyun.oss-cn-shanghai.aliyuncs.com/imhuman.html#b6a050e1-5ce3-4321-9ff4-3f85c5842bc2&quot;&gt;https://defyun.oss-cn-shanghai.aliyuncs.com/imhuman.html#b6a050e1-5ce3-4321-9ff4-3f85c5842bc2&lt;/a&gt;&lt;/p&gt;
 </description>
       </item>
     
       <item>
-        <title>ShellDroid：用Scala写一个简单的微信多开App</title>
-        <link>xun.im/2016/05/30/shelldroid-a-virtual-environments-for-android-apps/</link>
-        <pubDate>Mon, 30 May 2016 00:00:00 +0800</pubDate>
+        <title>例1:微信消息Kindle推送</title>
+        <link>xun.im/2017/04/23/example-weixin-to-kindle/</link>
+        <pubDate>Sun, 23 Apr 2017 00:00:00 +0800</pubDate>
         <author>wuhx</author>
-        <description>&lt;h3 id=&quot;section&quot;&gt;起因&lt;/h3&gt;
+        <description>&lt;p&gt;本例介绍如何设置实现微信消息推送Kindle。&lt;br /&gt;
+原理：&lt;br /&gt;
+从微信Feed中提取出文章链接地址，满足Spec条件后，将其作为输入传递给KindleAction，实现文章推送。关于Feed，Spec和Action的概念，请参考&lt;a href=&quot;/2017/04/23/cloudmonad/&quot;&gt;这里&lt;/a&gt;&lt;/p&gt;
 
-&lt;p&gt;因为运行着一个Kindle推送&lt;a href=&quot;http://neveread.com/&quot;&gt;微信机器人&lt;/a&gt;，时常需要在手机上切换私人微信号查看一下，每次手动重新输入帐号密码过于麻烦，网上的微信多开版本又各种不靠谱。研究了一下安卓App运行过程，发现其实要实现App多帐号运行非常简单，于是自己动手写了一个。&lt;/p&gt;
+&lt;p&gt;微信Feed的输出有3个字段：url，title和content。&lt;/p&gt;
 
-&lt;h3 id=&quot;scala&quot;&gt;为什么使用Scala写安卓应用&lt;/h3&gt;
+&lt;p&gt;当你在微信或其他App里分享链接给微信机器人时，title和url字段分别对应分享文章的标题和链接，content字段为空&lt;/p&gt;
 
-&lt;p&gt;虽然Java是Android上的官方语言，各种坑更少。但Scala因为语言本身的优势，可以更愉快的写代码，加上&lt;a href=&quot;https://github.com/scala-android/sbt-android&quot;&gt;sbt android&lt;/a&gt;等第三方库的成熟，自己要折腾的地方并不多。&lt;/p&gt;
+&lt;p&gt;当你发一条文本消息给微信机器人时，content字段是文本消息的内容，title和url字段为空。&lt;/p&gt;
 
-&lt;h4 id=&quot;scala-1&quot;&gt;Scala写安卓应用的优点&lt;/h4&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;代码更简洁，Scala的implicit特别适合处理Android UI代码中的随处可见的context上下文参数，隐式类型转换用来提取UI控件信息等，也能大幅度减少代码。&lt;/li&gt;
-  &lt;li&gt;类型安全的资源文件（Typed Resources）。不用先findViewById，再Cast到正确的资源类型。&lt;/li&gt;
-  &lt;li&gt;借用安卓AsyncTask的线程池配合Scala的Future，轻松实现异步处理。&lt;/li&gt;
-  &lt;li&gt;Scala的原生语言特性（lazy val懒绑定）直接实现&lt;a href=&quot;http://jakewharton.github.io/butterknife/&quot;&gt;Butterknife&lt;/a&gt;类似资源绑定功能，无需第三方库。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h4 id=&quot;scala-2&quot;&gt;Scala写安卓应用的缺点&lt;/h4&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;引入Scala库后，应用体积变大，并会碰到&lt;a href=&quot;https://developer.android.com/studio/build/multidex.html&quot;&gt;安卓的64K问题&lt;/a&gt; ，proguard变成标配。理论上这个问题可以通过在系统中预装Scala库解决。&lt;/li&gt;
-  &lt;li&gt;没有谷歌官方支持，自配Intellj开发，Android Studio很多功能用不到。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h4 id=&quot;section-1&quot;&gt;总结&lt;/h4&gt;
-
-&lt;p&gt;用Scala写安卓应用，完全可行并且更有乐趣，但文档和支持度相对较少，需要你有自行阅读代码解决问题的能力。&lt;/p&gt;
-
-&lt;p&gt;另外，因为安卓运行时（runtime）本质上是一个谷歌对JVM标准的实现，Scala作为一种通用JVM语言，可以跳过Android App框架，直接写能在安卓上运行的命令行程序，比如以前用Scala写过一个安卓Native程序&lt;a href=&quot;https://github.com/wuhx/setpropex&quot;&gt;setpropex&lt;/a&gt;，可通过修改安卓init系统进程的内存来设置一些常规手段不能设置的属性。&lt;/p&gt;
-
-&lt;h3 id=&quot;shelldroid&quot;&gt;ShellDroid的原理&lt;/h3&gt;
-
-&lt;p&gt;安卓是一个多用户系统，所有的App都有一个数据目录，放在/data/data/appname下，ShellDroid为了实现App多个帐号登录，备份了每个账户的数据目录，在用户切换帐号时，切换数据目录。&lt;/p&gt;
-
-&lt;p&gt;类似的项目有LBE平行空间，没有详细了解其原理，只看了一下官网介绍，猜测应该是用了类似虚拟机的机制，其他App运行在平行空间虚拟的安卓API里，然后由平行空间调用真实安卓API。这样的好处是对App有完全控制，并且不需要root权限。&lt;/p&gt;
-
-&lt;p&gt;但缺点也很明显：&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;开发的工作量会很大。&lt;/li&gt;
-  &lt;li&gt;对用户来说，装LBE平行空间这样一个权限巨大的不开源黑盒软件，风险会很大。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;另外LBE平行空间只支持双开，不支持三开或更多，ShellDroid完全没有这个限制。&lt;/p&gt;
-
-&lt;p&gt;同时，多开只是ShellDroid的一个功能，利用 &lt;a href=&quot;http://repo.xposed.info/&quot;&gt;Xposed&lt;/a&gt;，ShellDroid还可以定制App在不同多开环境下能获取到的手机私隐信息。比如IMEI，手机型号，手机品牌等。如果你用过&lt;a href=&quot;https://github.com/M66B/XPrivacy&quot;&gt;XPrivacy&lt;/a&gt;，ShellDroid就相当于一个可根据App帐号区分权限的Xprivacy，用不同帐号运行App，该App会有不同的权限。当然这个功能实现的较为简单，没有Xprivacy那么强大。&lt;/p&gt;
-
-&lt;p&gt;于是配合这两个能力，我们不仅可以双开微信，而且可以迷惑微信对所运行的真实手机硬件环境的感知。大家都知道，在不同的手机登录微信时，哪怕你的帐号密码都对，微信都会要重新认证一下。ShellDroid会把App第一次运行生成的所有数据和ShellDroid运行环境配置放在一起，相当于制作了一个portable的微信：）。&lt;/p&gt;
-
-&lt;h3 id=&quot;section-2&quot;&gt;如何使用&lt;/h3&gt;
-
-&lt;p&gt;下载ShellDroid的源码，执行&lt;code class=&quot;highlighter-rouge&quot;&gt;sbt apk&lt;/code&gt;编译安装运行。注意事项请参考&lt;a href=&quot;https://github.com/wuhx/shelldroid/blob/master/README.md&quot;&gt;README&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://raw.githubusercontent.com/wuhx/shelldroid/master/screencast/main.png&quot; alt=&quot;运行界面&quot; /&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;section-3&quot;&gt;相关链接&lt;/h3&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;Scala On Android： &lt;a href=&quot;http://scala-on-android.taig.io/&quot;&gt;http://scala-on-android.taig.io/&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;Xposed： &lt;a href=&quot;http://repo.xposed.info/&quot;&gt;http://repo.xposed.info/&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;ShellDroid源码：&lt;a href=&quot;https://github.com/wuhx/shelldroid&quot;&gt;https://github.com/wuhx/shelldroid&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;setpropex源码：&lt;a href=&quot;https://github.com/wuhx/setpropex&quot;&gt;https://github.com/wuhx/setpropex&lt;/a&gt;&lt;/li&gt;
-&lt;/ol&gt;
-</description>
-      </item>
-    
-      <item>
-        <title>数学的乐趣：Scala和Project Euler</title>
-        <link>xun.im/2015/08/26/math-for-fun-in-scala/</link>
-        <pubDate>Wed, 26 Aug 2015 00:00:00 +0800</pubDate>
-        <author>wuhx</author>
-        <description>&lt;h3 id=&quot;section&quot;&gt;缘起&lt;/h3&gt;
-
-&lt;p&gt;刚用Scala做了一个像样的&lt;a href=&quot;http://xun.im/2015/08/24/weixin-robot-vs-kindle-2.0/&quot;&gt;项目&lt;/a&gt;，对Scala热情满满，无事时用它做了几题Project Euler， 发现Scala非常适合这个，写一点心得，希望抛砖引玉，能有更多的人喜欢上Scala这门语言。&lt;/p&gt;
-
-&lt;h3 id=&quot;section-1&quot;&gt;欧拉工程&lt;/h3&gt;
-
-&lt;p&gt;从第12题说起：&lt;/p&gt;
-
-&lt;p&gt;Problem 12 ：&lt;a href=&quot;http://projecteuler.net/index.php?section=problems&amp;amp;id=12&quot;&gt;Highly divisible triangular number&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;The sequence of triangle numbers is generated by adding the natural numbers. So the 7th triangle number would be 1 + 2 + 3 + 4 + 5 + 6 + 7 = 28. The first ten terms would be:&lt;/p&gt;
-
-&lt;p&gt;1, 3, 6, 10, 15, 21, 28, 36, 45, 55, …&lt;/p&gt;
-
-&lt;p&gt;Let us list the factors of the first seven triangle numbers:&lt;/p&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;&lt;strong&gt; 1&lt;/strong&gt;: 1&lt;/p&gt;
-
-  &lt;p&gt;&lt;strong&gt; 3&lt;/strong&gt;: 1,3&lt;/p&gt;
-
-  &lt;p&gt;&lt;strong&gt; 6&lt;/strong&gt;: 1,2,3,6&lt;/p&gt;
-
-  &lt;p&gt;&lt;strong&gt;10&lt;/strong&gt;: 1,2,5,10&lt;/p&gt;
-
-  &lt;p&gt;&lt;strong&gt;15&lt;/strong&gt;: 1,3,5,15&lt;/p&gt;
-
-  &lt;p&gt;&lt;strong&gt;21&lt;/strong&gt;: 1,3,7,21&lt;/p&gt;
-
-  &lt;p&gt;&lt;strong&gt;28&lt;/strong&gt;: 1,2,4,7,14,28&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;We can see that 28 is the first triangle number to have over five divisors.&lt;/p&gt;
-
-&lt;p&gt;What is the value of the first triangle number to have over five hundred divisors?&lt;/p&gt;
-
-&lt;h3 id=&quot;section-2&quot;&gt;快速实现&lt;/h3&gt;
-
-&lt;p&gt;根据题目描述，所谓triangle数，是指第n个数为1到n相加得出的数。需要求出第一个有500个因子的triangle数。所以解题需要两步：&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;找出所有的triangle数。&lt;/li&gt;
-  &lt;li&gt;计算每个triangle的因子，找出第一个因子数大于500的triangle数。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;简单！&lt;/p&gt;
-
-&lt;h4 id=&quot;triangular&quot;&gt;triangular数的定义&lt;/h4&gt;
-
-&lt;p&gt;triangular数按定义最直接的实现。&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;triangulars&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
- &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;
- &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;num&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;triangulars&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;num&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;num&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;如果是第一个数返回1，否则返回前一个triangular数和n之和，递归实现。&lt;/p&gt;
-
-&lt;h4 id=&quot;section-3&quot;&gt;检查因子数：&lt;/h4&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;divisisorsNum&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-  &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;to&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;filter&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;%&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;_&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;size&lt;/span&gt; 
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;n和所有小于n的数取模，并统计能被整除（取模结果为0）的数的个数，即为n的因子数。&lt;/p&gt;
-
-&lt;h4 id=&quot;ntriangle-&quot;&gt;获取最小有n个因子的triangle 数：&lt;/h4&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;euler12&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-  &lt;span class=&quot;nc&quot;&gt;Stream&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;from&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;map&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;triangulars&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;find&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;divisisorsNum&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;_&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;Stream.from(1)&lt;/code&gt;构建一个从1开始的整数列表，像整数的定义一样，这个列表是无穷大的，但其中的值在被引用之前并不存在于内存中，而是通过call by name实现惰性求值。可以理解为该列表是由一个head元素+动态计算出后续元素的函数组成。&lt;/p&gt;
-
-&lt;p&gt;通过对整数列表执行triangulars函数的map，生成一个triangular数组成的列表，同样，这个列表也是无穷大和惰性求值的。&lt;/p&gt;
-
-&lt;p&gt;最后查找其中divisisorsNum也就是因子数大于n的第一个triangular数。&lt;/p&gt;
-
-&lt;h4 id=&quot;section-4&quot;&gt;运行：&lt;/h4&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;scala&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;euler12&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;res4&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;28&lt;/span&gt;
-
-&lt;span class=&quot;n&quot;&gt;scala&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;euler12&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;50&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;res5&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;25200&lt;/span&gt;
-
-&lt;span class=&quot;n&quot;&gt;scala&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;euler12&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;500&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;因子数较小的测试都没有问题，但在求本题的答案时（500个因子）挂死，原因是我们的程序效率太低，CPU算不过来了。&lt;/p&gt;
-
-&lt;h3 id=&quot;section-5&quot;&gt;改进&lt;/h3&gt;
-
-&lt;h4 id=&quot;section-6&quot;&gt;尾递归&lt;/h4&gt;
-
-&lt;p&gt;首先triangulars函数中，我们用到了递归，但不是尾递归，如若递归层数太深，会发生栈溢出。&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;scala&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;triangulars&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;MaxValue&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;java&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lang&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;StackOverflowError&lt;/span&gt;
-  &lt;span class=&quot;n&quot;&gt;at&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;triangulars&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;&amp;gt;:&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;12&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;n&quot;&gt;at&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;triangulars&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;&amp;gt;:&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;12&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;n&quot;&gt;at&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;triangulars&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;&amp;gt;:&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;12&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;改成尾递归&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nd&quot;&gt;@tailrec&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;triangulars&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Long&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;acc&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Long&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Long&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-  &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;acc&lt;/span&gt;
-  &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;num&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;triangulars&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;acc&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;scala&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;triangulars&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;MaxValue&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;res2&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Long&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2305843008139952128&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;但改完后求本题答案还是挂死（其实跑几个小时还是能算出答案的），仔细观察，euler12获取triangular数列表的效率非常低，反复的对每个整数计算对应的triangular数，而这些计算有很大一部分是重复的，如triangulars(100)，其实就是triangulars(99)+100，不需要从1开始重新计算。&lt;/p&gt;
-
-&lt;p&gt;所以需要&lt;/p&gt;
-
-&lt;h4 id=&quot;triangular-1&quot;&gt;更高效的构建triangular数列表&lt;/h4&gt;
-
-&lt;p&gt;稍加推导，除第一个元素，第n个triangular数是前一个triangular数和n之和，直接用这个定义构成triangular数列表。&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;triangulars&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Stream&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;#::&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;triangulars&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;新的triangulars函数直接生成一个Stream，第一个参数作为递归的初始值，第二个参数标记index，每次递归时加1。&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;scala&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;triangulars&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;take&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;10&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;force&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;res6&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;scala.collection.immutable.Stream&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Stream&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;6&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;10&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;15&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;21&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;28&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;36&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;45&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;55&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;作为测试，从这个列表中取出10个数，并强制求值，查看结果。&lt;/p&gt;
-
-&lt;h4 id=&quot;section-7&quot;&gt;更高效的检查因子数&lt;/h4&gt;
-
-&lt;p&gt;前面的&lt;code class=&quot;highlighter-rouge&quot;&gt;divisisorsNum&lt;/code&gt;函数检查因子数的方法是把n和所有小于n的整数都取模，过滤出其中能被除尽的数，这样效率显然太低了，尤其是取模运算很耗CPU。&lt;/p&gt;
-
-&lt;p&gt;更高效的方法是：只检查小于根号n的数，并将结果乘以2（每个能整除的因子必然还有一个大于根号n小于n的同伴）。&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;divisisorNumbers&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-  &lt;span class=&quot;nc&quot;&gt;Stream&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;from&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;takeWhile&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;foldLeft&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)((&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;acc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;%&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;acc&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;acc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;这里用到了foldLeft，其作用是把Stream中所有的元素过一遍指定的函数，并将结果累加返回。&lt;/p&gt;
-
-&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;foldLeft(0)((acc, i) =&amp;gt; if (n % i == 0) acc + 2 else acc)&lt;/code&gt; 第一个参数0是累加器的初始值，acc是累加器，i为Stream中的各个元素。&lt;/p&gt;
-
-&lt;h4 id=&quot;section-8&quot;&gt;改进后的版本：&lt;/h4&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;euler12&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-  &lt;span class=&quot;n&quot;&gt;triangulars&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;find&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;divisisorNumbers&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;_&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;scala&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;euler12&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;500&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;res21&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Option&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Some&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;76576500&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;统计一下时间，花了4秒多得出结果。&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;scala&amp;gt; time {euler12(500)}
-4 seconds 433 microseconds 155 milliseconds
-res24: Option[Int] = Some(76576500)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;已经到了可用级别了。但是:&lt;/p&gt;
-
-&lt;h3 id=&quot;section-9&quot;&gt;能否更快&lt;/h3&gt;
-
-&lt;p&gt;由&lt;a href=&quot;http://primes.utm.edu/glossary/xpage/tau.html&quot;&gt;数论的知识&lt;/a&gt;，任何一个整数都能唯一的表示为几个素数的乘积。&lt;/p&gt;
-
-&lt;script type=&quot;math/tex; mode=display&quot;&gt;n = p_1^{e_1}p_2^{e_2}\cdots p_s^{e^s}\quad&lt;/script&gt;
-
-&lt;p&gt;其中n为任意整数，p1-ps为素数。&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;如，4200可以表示成：&lt;/strong&gt;&lt;/p&gt;
-
-&lt;script type=&quot;math/tex; mode=display&quot;&gt;4200 = 2^{3}3^{1}5^{2}7^1&lt;/script&gt;
-
-&lt;p&gt;所以4200有 (3+1)(1+1)(2+1)(1+1) = 48个因子。&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;而triangle数可以表示为：&lt;/strong&gt;&lt;/p&gt;
-
-&lt;script type=&quot;math/tex; mode=display&quot;&gt;triangles(n)=1+2+\cdots+n=\sum_{i=1}^n=\frac{n(n+1)}{2}.&lt;/script&gt;
-
-&lt;p&gt;所以triangles(n)的因子数为：n的因子数乘以n+1的因子数，其中n或者n+1中偶数那个因子需要减掉一个因子(因为要除了2)，而n和n+1中必然有一个偶数。&lt;/p&gt;
-
-&lt;h4 id=&quot;section-10&quot;&gt;代码实现&lt;/h4&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;cm&quot;&gt;/*
-* 计算n的因子个数，排除一次2因子
-* */&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;divisisorNumbers&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sum&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;primes&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Stream&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;])&lt;/span&gt;
-  &lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;primes&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-  &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;head&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;#::&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tail&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;head&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sum&lt;/span&gt;
-  &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;prime&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;#::&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tail&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;number&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;count&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;while&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;number&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;%&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;prime&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-      &lt;span class=&quot;n&quot;&gt;number&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;number&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;/&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;prime&lt;/span&gt;
-      &lt;span class=&quot;n&quot;&gt;count&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;count&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;
-    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;prime&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;count&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-      &lt;span class=&quot;n&quot;&gt;count&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;count&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;
-    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;divisisorNumbers&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;number&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sum&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;count&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tail&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;euler12&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-  &lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;primeStreamInt&lt;/span&gt;  &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Stream&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;from&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;filter&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;BigInt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;_&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;isProbablePrime&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;15&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt;
-  &lt;span class=&quot;nc&quot;&gt;Stream&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;from&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;find&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;divisisorNumbers&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;primeStreamInt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;
-          &lt;span class=&quot;n&quot;&gt;divisisorNumbers&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;primeStreamInt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;map&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;/&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;代码中用到的primeStreamInt是利用JDK的isProbablePrime函数过滤出的素数列表，用于查找因子，算是一个小cheat。&lt;/p&gt;
-
-&lt;p&gt;统计时间：性能提高到了毫秒级，但是我还是更喜欢前面那个4秒多的实现：）&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;scala&amp;gt; time(euler12(500))
-0 seconds 156 microseconds 568 milliseconds
-res6: Option[Int] = Some(76576500)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;h3 id=&quot;section-11&quot;&gt;结语&lt;/h3&gt;
-
-&lt;p&gt;Scala是一门很有趣的语言，同时具有函数式语言的灵敏和Java生态系统的严谨。如果你还有学习的动力，把它作为你的下一门语言吧。&lt;/p&gt;
-
-</description>
-      </item>
-    
-      <item>
-        <title>微信你的kindle V2.0</title>
-        <link>xun.im/2015/08/24/weixin-robot-vs-kindle-2.0/</link>
-        <pubDate>Mon, 24 Aug 2015 00:00:00 +0800</pubDate>
-        <author>wuhx</author>
-        <description>&lt;p&gt;这次改版的主要目的是让&lt;a href=&quot;http://neveread.com&quot;&gt;不读&lt;/a&gt;成为一个稳定能长期运行的服务，去掉&lt;a href=&quot;http://xun.im/2015/07/19/weixin-robot-vs-kindle/&quot;&gt;第一版&lt;/a&gt;中一些试验性的功能。&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;主要的改动：&lt;/strong&gt;&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;主数据库从ElasticSearch换成Slick+H2。&lt;/li&gt;
-  &lt;li&gt;微信机器人模块完全独立出来，通过Rest API和主数据库交互。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;原有构架中，每个模块（微信机器人，蜘蛛，邮件）都在同一个Akka Cluster中，并自带一个ElasticSearch数据库本地实例，数据的读写操作都针对这个本地数据库，数据同步交由Elastic集群完成，完全无需关注其他模块的存在。 这个方案的最大优势是可扩展性，能够非常方便的增加模块实例，提高整个系统的吞吐。但缺点也很明显：对于Neveread这样一个小系统，这一套东西太overkill了，并且ElasticSearch数据库的管理能力较弱，不便于引入复杂一点的数据操作。改版后，neveread的服务器从阿里云1G内存迁移到了DigitalOcean 512M内存的VM，并通过了相同强度的压力测试。&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;细节改动：&lt;/strong&gt;&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;去掉了自动好友验证功能。&lt;/li&gt;
-  &lt;li&gt;去掉了邮箱全文投递功能。（update：已反合全文投递功能，发送文本或HTML内容到「不读」为你分配的@kindle.pm邮箱即可）&lt;/li&gt;
-  &lt;li&gt;引入基于用户的优先级投递功能。&lt;/li&gt;
-  &lt;li&gt;增加微信机器人的功能。如：替用户投递文章，绑定邮箱，自动抓取关注的订阅号新发布的文章。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;和第一版一样，这次升级也是一次新技术的学习过程，其中有很多有意思的事情，如函数式数据库操作（FRM）库&lt;a href=&quot;http://slick.typesafe.com&quot;&gt;Slick&lt;/a&gt;的引入。重新设计了微信机器人消息收发模块，通过无状态的Actor消除缓存需求。大量使用&lt;a href=&quot;http://docs.scala-lang.org/overviews/core/futures.html&quot;&gt;Future&lt;/a&gt;，让整个系统全异步执行。这里先说说基于用户的优先级投递功能。&lt;/p&gt;
-
-&lt;h5 id=&quot;section&quot;&gt;优先级投递功能&lt;/h5&gt;
-
-&lt;p&gt;为了更加友好的使用微信机器人：），系统中人为的把每条微信消息的发送间隔增加的1秒以上，这样消息发送模块很容易成为整个系统的瓶颈，导致无法及时处理用户消息。因此需要引入优先级来保证服务质量。&lt;/p&gt;
-
-&lt;p&gt;第一版中，每种消息类型有一个优先级，如绑定消息的优先级比其他消息要高，改版后优先级会同时由消息类型优先级和动态调整的用户优先级共同决定。&lt;/p&gt;
-
-&lt;p&gt;优先级投递功能主要解决的问题是：&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;优先级高的用户的消息优先投递。&lt;/li&gt;
-  &lt;li&gt;优先级高的消息类型的消息优先投递。&lt;/li&gt;
-  &lt;li&gt;确保优先级低的用户的消息也有机会投递。&lt;/li&gt;
-  &lt;li&gt;大量发送消息的用户优先级迅速降低，防止恶意使用。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;&lt;strong&gt;具体算法：&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;每个用户都有一个优先级基数。用户每发送一条消息，该基数都会自动减1，每条消息的优先级由该基数和消息类型优先级共同构成，并被放入一个优先级队列中，按序投递。如果队列中消息数量超过一定阀值，最低优先级的消息会被直接丢弃。用户优先级基数会定时重置。&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;实现的效果：&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;假设A用户优先级为60，B用户优先级为50，普通消息优先级为0，命令消息优先级为10.&lt;/p&gt;
-
-&lt;p&gt;满负荷情况下，A发送10条普通消息后，B发送的普通消息才会被投递，但如果B发送的是命令消息，该消息也会被立刻投递。A如果继续按照2 msg/sec的速度发送消息，而B按照 1 msg/sec的消息发送消息，则后续B的消息都会被优先投递，直到下一次优先级基数重置。&lt;/p&gt;
-
-&lt;p&gt;目前系统设置中，新注册的用户优先级基数默认为50，而上一个版本中已绑定的用户按60优先级基数导入到新版本中。&lt;/p&gt;
-
-&lt;p&gt;发送「&lt;strong&gt;设置&lt;/strong&gt;」微信消息给文字鲨看看你的优先级吧！&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;附：&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&quot;http://www.v2ex.com/t/215601&quot;&gt;v2ex讨论链接&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&quot;http://slick.typesafe.com/doc/3.0.0/orm-to-slick.html&quot;&gt;Slick文档FRM VS ORM&lt;/a&gt; （建议发送到kindle上细读：）&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&quot;http://xun.im/2015/07/19/weixin-robot-vs-kindle/&quot;&gt;微信你的Kindle：记录我的第一个Web项目&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&quot;http://neveread.com&quot;&gt;不读：构建你万年图书馆&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;欢迎关注「不读」的公众号&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://7u2pdt.com1.z0.glb.clouddn.com/nevereadqr.jpg&quot; alt=&quot;公众号&quot; /&gt;&lt;/p&gt;
-</description>
-      </item>
-    
-      <item>
-        <title>微信你的Kindle：记录我的第一个Web项目</title>
-        <link>xun.im/2015/07/19/weixin-robot-vs-kindle/</link>
-        <pubDate>Sun, 19 Jul 2015 00:00:00 +0800</pubDate>
-        <author>wuhx</author>
-        <description>&lt;ul id=&quot;markdown-toc&quot;&gt;
-  &lt;li&gt;&lt;a href=&quot;#section&quot; id=&quot;markdown-toc-section&quot;&gt;一：实现了什么&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#section-1&quot; id=&quot;markdown-toc-section-1&quot;&gt;二：为什么要做这个&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#section-2&quot; id=&quot;markdown-toc-section-2&quot;&gt;三：用到的技术&lt;/a&gt;    &lt;ul&gt;
-      &lt;li&gt;&lt;a href=&quot;#scalaakka&quot; id=&quot;markdown-toc-scalaakka&quot;&gt;1  关于Scala和Akka&lt;/a&gt;&lt;/li&gt;
-      &lt;li&gt;&lt;a href=&quot;#section-3&quot; id=&quot;markdown-toc-section-3&quot;&gt;2  关于数据库&lt;/a&gt;&lt;/li&gt;
-      &lt;li&gt;&lt;a href=&quot;#section-4&quot; id=&quot;markdown-toc-section-4&quot;&gt;3  关于爬虫&lt;/a&gt;        &lt;ul&gt;
-          &lt;li&gt;&lt;a href=&quot;#section-5&quot; id=&quot;markdown-toc-section-5&quot;&gt;爬取网页类型&lt;/a&gt;&lt;/li&gt;
-          &lt;li&gt;&lt;a href=&quot;#section-6&quot; id=&quot;markdown-toc-section-6&quot;&gt;文档的生成&lt;/a&gt;&lt;/li&gt;
-        &lt;/ul&gt;
-      &lt;/li&gt;
-      &lt;li&gt;&lt;a href=&quot;#section-7&quot; id=&quot;markdown-toc-section-7&quot;&gt;4  关于微信机器人&lt;/a&gt;        &lt;ul&gt;
-          &lt;li&gt;&lt;a href=&quot;#section-8&quot; id=&quot;markdown-toc-section-8&quot;&gt;功能：&lt;/a&gt;&lt;/li&gt;
-          &lt;li&gt;&lt;a href=&quot;#section-9&quot; id=&quot;markdown-toc-section-9&quot;&gt;稳定性：&lt;/a&gt;&lt;/li&gt;
-        &lt;/ul&gt;
-      &lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#section-10&quot; id=&quot;markdown-toc-section-10&quot;&gt;四： 总结&lt;/a&gt;    &lt;ul&gt;
-      &lt;li&gt;&lt;a href=&quot;#section-11&quot; id=&quot;markdown-toc-section-11&quot;&gt;附：&lt;/a&gt;&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h3 id=&quot;section&quot;&gt;一：实现了什么&lt;/h3&gt;
-
-&lt;p&gt;在任何能够分享到微信的APP，把你正在阅读的文章分享给一个微信机器人好友（非公众号），就能推送到你的Kindle上。&lt;/p&gt;
-
-&lt;p&gt;针对微信订阅号，知乎，简书，网易新闻，v2ex，github，stackoverflow 等多个网站校正排版，提供更好的阅读体验和推送速度。&lt;/p&gt;
-
-&lt;p&gt;亚马逊官方也有一个&lt;a href=&quot;http://mp.weixin.qq.com/s?__biz=MzAxMTAzNDM2OQ==&amp;amp;mid=203661957&amp;amp;idx=1&amp;amp;sn=92ff00865b49bc34d0cf4e853e678571#rd&quot;&gt;服务号&lt;/a&gt;提供类似的服务。&lt;/p&gt;
-
-&lt;p&gt;相比之下我们的优势：&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;支持微信之外，从其他App分享。&lt;/li&gt;
-  &lt;li&gt;亚马逊官方服务号对非微信公共平台（http://mp.weixin.qq.com）的文章排版支持不好&lt;/li&gt;
-  &lt;li&gt;排版优化，生成的文档体积更小（平均每篇小三四百K），推送更快。&lt;/li&gt;
-  &lt;li&gt;图片支持格式更多。如&lt;a href=&quot;http://mp.weixin.qq.com/s?__biz=MjM5MDI1Nzk2MA==&amp;amp;mid=208393099&amp;amp;idx=3&amp;amp;sn=c3d6960dde14d37eb37fc4536cfdf21f&amp;amp;scene=1#rd&quot;&gt;这篇文章&lt;/a&gt; 的图片亚马逊官方服务号不支持，我们支持。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h3 id=&quot;section-1&quot;&gt;二：为什么要做这个&lt;/h3&gt;
-
-&lt;p&gt;对个人知识获取来说，这是一个最好的时代，通过一台手机你就可以获取到人类几乎所有的知识，但信息爆炸的同时，也造成了信息的贬值。在手机上我只愿意做浏览性的阅读，一条八卦新闻和一篇有深度的文章都只能获取我相同的关注力，超过千字的文章，拇指就会开始有些不耐烦的加快滑动，更遑论停下来思考一下。&lt;/p&gt;
-
-&lt;p&gt;kindle是一个伟大阅读工具，e-paper提供了最接近纸张的阅读体验。并且由于功能单一，更能让人专注于阅读。&lt;/p&gt;
-
-&lt;p&gt;对我来说一个理想的阅读方式是：&lt;/p&gt;
-
-&lt;p&gt;手机（或其他pad）做为一个信息源，快速浏览发现。需要进一步阅读的内容推送到kindle查看。&lt;/p&gt;
-
-&lt;h3 id=&quot;section-2&quot;&gt;三：用到的技术&lt;/h3&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;主体架构：   Scala &amp;amp; Akka&lt;/li&gt;
-  &lt;li&gt;数据库：       ElasticSearch&lt;/li&gt;
-  &lt;li&gt;爬虫：           Jsoup &amp;amp; webdriver + phantomjs&lt;/li&gt;
-  &lt;li&gt;邮件服务：   AWS Mail &amp;amp; MailGun&lt;/li&gt;
-  &lt;li&gt;日志和监控：Logstash+Kibana+ElasticSearch&lt;/li&gt;
-  &lt;li&gt;微信机器人：webdriver + phantomjs + web微信&lt;/li&gt;
-  &lt;li&gt;web前端:        github page + 七牛云CDN&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h4 id=&quot;scalaakka&quot;&gt;1  关于Scala和Akka&lt;/h4&gt;
-
-&lt;p&gt;neveread.com有三个模块组成，&lt;code class=&quot;highlighter-rouge&quot;&gt;微信机器人&lt;/code&gt; &lt;code class=&quot;highlighter-rouge&quot;&gt;爬虫&lt;/code&gt; &lt;code class=&quot;highlighter-rouge&quot;&gt;邮件服务&lt;/code&gt;，他们通过&lt;a href=&quot;http://doc.akka.io/docs/akka/snapshot/common/cluster.html&quot;&gt;akka cluster&lt;/a&gt;协作，由AKKA提供位置无关性，可以运行在一台服务器上，也可以创建多个实例分布在多台服务器上。&lt;/p&gt;
-
-&lt;p&gt;在选择scala+akka之前考察过Erlang，非常喜欢这门语言，特别是它的&lt;a href=&quot;http://erlang.org/doc/reference_manual/patterns.html&quot;&gt;Pattern Matching&lt;/a&gt;，&lt;a href=&quot;http://www.erlang.org/doc/programming_examples/list_comprehensions.html&quot;&gt;List Comprehensions&lt;/a&gt; 让我大开眼界，以及OTP中的Actor概念。但最终放弃是因为几个缺点（我认为的）：&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;小众语言，生态系统弱。&lt;/li&gt;
-  &lt;li&gt;IDE支持不好。&lt;/li&gt;
-  &lt;li&gt;ErlangVM的性能弱。&lt;/li&gt;
-  &lt;li&gt;语法简单，但过于简单。&lt;/li&gt;
-  &lt;li&gt;非类型安全。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;Scala/Akka在复制了Erlang的OTP框架之外，正好弥补了这些缺点。&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;JVM的生态系统&lt;/li&gt;
-  &lt;li&gt;Intellj官方插件&lt;/li&gt;
-  &lt;li&gt;JVM的性能&lt;/li&gt;
-  &lt;li&gt;语法足够复杂，同时支持OOP和函数式。&lt;/li&gt;
-  &lt;li&gt;类型安全&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;作为一个从C语言转过来的人，编程思维方式的转变是个有趣的过程。之前对并发的理解多在用多线程同时解决某个问题，然后在各个线程中疲于同步各种变量的值（加锁，解锁），akka推崇的是状态分离（actor之间只能通过message交换信息），甚至消除可变状态（鼓励用val定义不可变变量，不用var定义可变变量），这些道理一开始的时候都懂，但写出来的代码，回头一看，其实就是裹着actor外衣的线程。&lt;/p&gt;
-
-&lt;p&gt;总结出一个结论：akka中一个actor的成本是极低的&lt;a href=&quot;http://doc.akka.io/docs/akka/snapshot/general/actor-systems.html#What_you_should_not_concern_yourself_with&quot;&gt;（内存占用300个字节）&lt;/a&gt;，远低于一个操作系统线程（几M栈空间），所以，actor和线程的使用模式有一个明显的不同，如果你的系统中始终只有少数几个Actor在包揽所有的工作，那就需要检查一下你对Actor的用法了。&lt;/p&gt;
-
-&lt;h4 id=&quot;section-3&quot;&gt;2  关于数据库&lt;/h4&gt;
-
-&lt;p&gt;ElasticSearch不是严格意义上的数据库，至少拿来做主数据库属于非典型应用。选中它主要是由于：&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;在JVM生态系统内。只需添加一行sbt依赖，就能用代码直接起一个ES数据库实例，完全不需要外部依赖，非常方便。&lt;/li&gt;
-  &lt;li&gt;完善的REST接口。能够接收任意POST过来的Json文档，自动生成对应的scheme，并存储文档。&lt;/li&gt;
-  &lt;li&gt;文档友好，并且自动支持搜索。&lt;/li&gt;
-  &lt;li&gt;分布式。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;ElasticSearch默认是作为一个独立进程运行在专门供它使用的服务器上，对内存需求很大，在我1g内存的还跑着其他进程的小服务器上，经常会内存不够，引发GC，整个JVM世界都不好了。&lt;/p&gt;
-
-&lt;p&gt;针对我的特殊需求单独做了调整：&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;数据量小（至少目前），调整ES_HEAP_SIZE到一个较小的值。&lt;/li&gt;
-  &lt;li&gt;部分数据（web微信 的session）只对本机的进程有用，无需同步到集群。设置session index的shards=1 replicas=0，以减小存储消耗。&lt;/li&gt;
-  &lt;li&gt;新session开启后，老的session数据就没用了，可以直接close，释放内存。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;虽然把embedded的ElasticSearch实例用在生产环境有点让人不太人放心，但embedded ES还有一个额外的好处：&lt;br /&gt;
-所有的配置都可动态编程配置。比如检测内网IP，自动将es绑定到内网，防止疏忽导致信息泄漏到外网。通过Akka cluster集群的event消息，动态配置ElasticSearch集群。&lt;/p&gt;
-
-&lt;h4 id=&quot;section-4&quot;&gt;3  关于爬虫&lt;/h4&gt;
-
-&lt;h5 id=&quot;section-5&quot;&gt;爬取网页类型&lt;/h5&gt;
-
-&lt;p&gt;需要采集的网页有两种情形：&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;直接返回静态的HTML页面。&lt;/li&gt;
-  &lt;li&gt;只返回一个HTML页面框架，内容由javascript动态获取后添加。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;第一种情形，也是绝大部分网页的情况，只需设置合理的User-Agent和Referer即可直接用Jsoup采集。&lt;/p&gt;
-
-&lt;p&gt;第二种情况，如网易客户端，evernotes等，复杂一点，有两种处理方法：&lt;/p&gt;
-
-&lt;p&gt;a）用webdriver驱动浏览器执行javascript获取内容，这种方法通用性好，但比较耗资源。&lt;/p&gt;
-
-&lt;p&gt;b）分析javascript加载内容的模式，用代码模拟抓取内容。&lt;/p&gt;
-
-&lt;h5 id=&quot;section-6&quot;&gt;文档的生成&lt;/h5&gt;
-
-&lt;p&gt;文档有两种方式生成：&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;通过识别网页内容（包括文章主体，用户评论），用jsoup提取出来，插入到一个模板文档中，这种方式生成的文档排版更干净，并且由于不用爬取不必要的图片和内容，生成的体积更小，爬取速度也更快。&lt;/li&gt;
-  &lt;li&gt;对于内容识别失败的网页，先用jsoup clean一遍（去掉javascript代码，统一UTF8编码等）后，保留原有样式投递。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;这两种情况，图片都会被重新编码成base64格式内嵌到网页中，由于base64编码效率比较低，编码后的数据普遍比原图大几倍，目前的规则是超过150K的图片，不重新编码，而是提供一个链接供用户在阅读时点击。&lt;/p&gt;
-
-&lt;h4 id=&quot;section-7&quot;&gt;4  关于微信机器人&lt;/h4&gt;
-
-&lt;p&gt;通过webdriver + phantmjs 上运行web微信实现。&lt;/p&gt;
-
-&lt;h5 id=&quot;section-8&quot;&gt;功能：&lt;/h5&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;接收好友消息，检测内容，并回复。&lt;/li&gt;
-  &lt;li&gt;提取用户分享的网址&lt;/li&gt;
-  &lt;li&gt;接收好友验证消息，根据验证码决定是否通过验证.&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;碰到的一个坑是正好遇上&lt;a href=&quot;https://twitter.com/mienflying/status/598700471126085632&quot;&gt;web微信改版&lt;/a&gt;，本地测试无论用chrome驱动还是phantomjs驱动都没有问题，deploy到服务器则有时OK，有时失败，没有规律。&lt;/p&gt;
-
-&lt;p&gt;现在的代码会检测web微信版本，同时支持目前的两个版本。&lt;/p&gt;
-
-&lt;h5 id=&quot;section-9&quot;&gt;稳定性：&lt;/h5&gt;
-
-&lt;p&gt;微信机器人是最早实现的模块，断断续续跑了几个月，偶尔掉线过几次，为此专门创建了一个状态监控的Actor，一旦检测到掉线就会触发Akka的supervisor策略自动重启，并用Twilio发出电话通知。&lt;/p&gt;
-
-&lt;p&gt;压力测试模拟过瞬间收到100条交替不同用户的消息，能够一一回复，只是延时会大一点。为了防止消息发送太快，每条消息间设置了0-1秒的延时，消息队列使用PriorityQueue实现，保证重要消息的优先级。&lt;/p&gt;
-
-&lt;h3 id=&quot;section-10&quot;&gt;四： 总结&lt;/h3&gt;
-
-&lt;p&gt;neveread.com是我第一个web项目，作为一个前BSP驱动码农，处处要学，费力自不必提，但那种看到一个程序从无到有的运行起来，只要拿起手机无时无地都能和你互动的成就感，是在一个大公司编写模块代码无法获取到的。&lt;/p&gt;
-
-&lt;h4 id=&quot;section-11&quot;&gt;附：&lt;/h4&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;&lt;a href=&quot;http://www.v2ex.com/t/206832&quot;&gt;v2ex讨论链接&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;http://neveread.com/&quot;&gt;http://neveread.com/&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;http://mp.weixin.qq.com/s?__biz=MzI2MDAxNzMzMg%3D%3D&amp;amp;mid=208689533&amp;amp;idx=1&amp;amp;sn=59368c84e0b2060aaba1e3ca9da0c550&amp;amp;scene=1&amp;amp;key=c76941211a49ab58a303ed91f93a38d9d39196ac3f9ab0641f3be3b436315ca17bf3f505967d92a432977d732764e6a1&amp;amp;ascene=1&amp;amp;uin=MTYwNDMxMTUwNg%253D%253D&quot;&gt;帮助文档&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;微信机器人1: 文字鲨（验证码请邮件pm@kindle.pm）&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://7u2pdt.com1.z0.glb.clouddn.com/robot-sha.jpeg&quot; alt=&quot;文字鲨&quot; /&gt;&lt;/p&gt;
-
-</description>
-      </item>
-    
-      <item>
-        <title>scala的implicit和magnet模式</title>
-        <link>xun.im/2015/04/21/scala-implicit-and-magnet-pattern/</link>
-        <pubDate>Tue, 21 Apr 2015 00:00:00 +0800</pubDate>
-        <author>wuhx</author>
-        <description>&lt;p&gt;对初学scala的人，implicit像一个黑魔法，来无影去无踪，像它的名字一样非常“含蓄”。&lt;/p&gt;
-
-&lt;p&gt;从某种意义上讲，implicit是一个类型系统的游戏。scala是强类型系统，所有的参数都需要符合类型预期，如果需要一个Int类型，你传来一个String，编译器会报类型不符错误。implicit的引入，使在报错之前还有一次机会，即：如果编译器在当前作用域内找到一个从String转换到Int的implicit定义函数，编译器会用这个implicit把你传给它的String转换成它需要的Int，于是一切又愉快的发生下去了。&lt;/p&gt;
-
-&lt;p&gt;当然这只是implicit的一种使用场景，spray.io（已合并到akka-http）的magnet模式利用的就是这个特性。&lt;/p&gt;
-
-&lt;h2 id=&quot;magnet&quot;&gt;magnet模式&lt;/h2&gt;
-
-&lt;p&gt;magnet模式简单讲就是通过定义一个magnet类型作为统一的参数，然后针对需要重载的参数列表，类型等，在magnet类型的companion object中实现相应的转换为magnet类型的implitcit函数。&lt;/p&gt;
-
-&lt;p&gt;如：可以定义一个Magnet类型实现一个接受任意参数的add函数&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;add&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;magnet&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;MyMagnet&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;magnet.Result&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;magnet&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
-
-&lt;span class=&quot;k&quot;&gt;sealed&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;trait&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;MyMagnet&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-  &lt;span class=&quot;k&quot;&gt;type&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Result&lt;/span&gt;
-  &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;apply&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Result&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-
-&lt;span class=&quot;k&quot;&gt;object&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;MyMagnet&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-  &lt;span class=&quot;c1&quot;&gt;//一个整形参数到MyMagenet的转换
-&lt;/span&gt;  &lt;span class=&quot;k&quot;&gt;implicit&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;fromInt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;MyMagnet&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-      &lt;span class=&quot;k&quot;&gt;type&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Result&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Int&lt;/span&gt;
-      &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;apply&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Result&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;
-    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-  &lt;span class=&quot;c1&quot;&gt;//一个String参数到MyMagenet的转换
-&lt;/span&gt;  &lt;span class=&quot;k&quot;&gt;implicit&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;fromString&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;MyMagnet&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-      &lt;span class=&quot;k&quot;&gt;type&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Result&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;String&lt;/span&gt;
-      &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;apply&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Result&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;hello &quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;
-    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-  &lt;span class=&quot;c1&quot;&gt;//一个String参数加一个整形参数到MyMagenet的转换
-&lt;/span&gt;  &lt;span class=&quot;k&quot;&gt;implicit&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;fromStringAndInt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tuple&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;MyMagnet&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-      &lt;span class=&quot;k&quot;&gt;type&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Result&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;String&lt;/span&gt;
-      &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;apply&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Result&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tuple&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tuple&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;toString&lt;/span&gt;
-    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;调用的时候可以：&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;gp&quot;&gt;scala&amp;gt; &lt;/span&gt;add&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;1&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-res9: Int &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; 2
-
-&lt;span class=&quot;gp&quot;&gt;scala&amp;gt; &lt;/span&gt;add&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;world&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-res10: String &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; hello world
-
-&lt;span class=&quot;gp&quot;&gt;scala&amp;gt; &lt;/span&gt;add&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;happy string &quot;&lt;/span&gt;, 5&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-res11: String &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; happy string 5
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;看到这里，你可能会说这不就是重载吗？java和scala原生就支持重载，但jvm对泛型（generics）的支持是通过类型擦除（type erasure）实现的，这意味着java常规的重载无法带类型参数，如：jvm无法区分下面这种类型不同的List参数。&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;scala&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;paste&lt;/span&gt;
-&lt;span class=&quot;c1&quot;&gt;// Entering paste mode (ctrl-D to finish)
-&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;add&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;List&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;])&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Unit&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{}&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;add&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;List&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;])&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Unit&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{}&lt;/span&gt;
-
-&lt;span class=&quot;c1&quot;&gt;// Exiting paste mode, now interpreting.
-&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;&amp;gt;:&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;8&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;error:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;double&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;definition:&lt;/span&gt;
-&lt;span class=&quot;kt&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;add&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;a:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;List&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;])&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Unit&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;at&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;line&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;7&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;and&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;add&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;List&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;])&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Unit&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;at&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;line&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;8&lt;/span&gt;
-&lt;span class=&quot;kt&quot;&gt;have&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;same&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;type&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;after&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;erasure:&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;a:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;List&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Unit&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;add&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;List&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;])&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Unit&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{}&lt;/span&gt;
-
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;而magnet模式正好可以弥补这个缺憾，另外magnet模式相当于把重载的实现从语言层面拉到了自己的代码逻辑中，有利于针对性的引入一些新技巧减少冗余代码。当然，magnet的缺点也是很明显的：额外的一层增加了代码的复杂度。&lt;/p&gt;
-
-&lt;h3 id=&quot;section&quot;&gt;隐含参数&lt;/h3&gt;
-
-&lt;p&gt;implicit另外一个常用的场景是： 替代全局变量，作为某个执行上下文中的隐含参数。&lt;/p&gt;
-
-&lt;p&gt;如：scala中异步的一个重要方法是使用Future。Futrure语义清晰，使用优雅，比手动起线程不知道高到哪里去了；），但Future在后台其实还是通过线程来执行的，要用Future就需要一个指定的执行上下文环境（&lt;a href=&quot;http://www.scala-lang.org/api/2.11.6/index.html#scala.concurrent.ExecutionContext&quot;&gt;ExecutionContext&lt;/a&gt; ，一般是线程池）来跑Future。Future又是一个object（单例对象，不是普通类）没有地方放这个线程池的引用，解决方案只能是在所有Future的方法中加上ExecutionContext参数，方法很函数式，但接口略显冗余。好在scala有implicit，只要你调用Future时，上下文中有一个implicit的ExecutionContext变量，Future会自动在这个EC上跑代码。&lt;/p&gt;
-
-&lt;p&gt;所以scala的&lt;a href=&quot;http://www.scala-lang.org/files/archive/nightly/docs/library/index.html#scala.concurrent.Future&quot;&gt;Future&lt;/a&gt;方法都有一个(implicit executor: ExecutionContext)参数&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;onComplete&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;U&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;⇒&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;U&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;implicit&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;executor&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;ExecutionContext&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Unit&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;不同于全局变量，你在调用Future方法时，想使用某个指定的ExecutionContext，还是可以把它作为参数显示的传递给Future方法，这个显示传递的参数会覆盖implicit的参数。&lt;/p&gt;
-
-&lt;p&gt;另：ExecutionContext的获取方法有&lt;/p&gt;
+&lt;p&gt;与之对应的，微信消息推送Kindle有两种方式：&lt;/p&gt;
 
 &lt;ol&gt;
   &lt;li&gt;
-    &lt;p&gt;直接引用全局EC。&lt;code class=&quot;highlighter-rouge&quot;&gt;import scala.concurrent.ExecutionContext.Implicits.global&lt;/code&gt;&lt;/p&gt;
+    &lt;p&gt;在微信或其他App里分享链接给微信机器人。&lt;br /&gt;
+这种方式下，第二步Spec时只要检测url字段不为空，第三步触发Action时，将url字段传递给KindleAction。&lt;/p&gt;
   &lt;/li&gt;
   &lt;li&gt;
-    &lt;p&gt;akka的actor中，引用当前actor系统的EC。&lt;code class=&quot;highlighter-rouge&quot;&gt;import context.dispatcher&lt;/code&gt;&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;也可以手动创建一个独占使用，确保线程池里的线程不会被其他不相干任务耗尽。&lt;/p&gt;
+    &lt;p&gt;发送链接文本消息给微信机器人。&lt;/p&gt;
 
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;java.util.concurrent.Executors&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;concurrent.ExecutionContext&lt;/span&gt;
-&lt;span class=&quot;c1&quot;&gt;//创建一个4个线程的线程池
-&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;executorService&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Executors&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;newFixedThreadPool&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;implicit&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ec&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;ExecutionContext&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fromExecutorService&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;executorService&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
+    &lt;p&gt;这时需要检测文本消息的内容是否是一个http链接地址，所以在第二步Spec时，检测content字段，判断内容是否包含http（也可以用正则表达式检测或直接判断是否非空），第三步触发Action时将content字段传递给KindleAction。&lt;/p&gt;
   &lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h3 id=&quot;section-1&quot;&gt;更多相关资料：&lt;/h3&gt;
+&lt;h5 id=&quot;section&quot;&gt;推送方式1: 链接分享&lt;/h5&gt;
 
-&lt;p&gt;&lt;a href=&quot;http://spray.io/blog/2012-12-13-the-magnet-pattern/&quot;&gt;The magnet pattern&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;登录后点击&lt;a href=&quot;https://defyun.oss-cn-shanghai.aliyuncs.com/#create&quot;&gt;新建&lt;/a&gt;，在第一步设置输入Feed时选择微信Feed&lt;/p&gt;
 
-&lt;p&gt;&lt;a href=&quot;https://pavelfatin.com/design-patterns-in-scala/&quot;&gt;Design Patterns in Scala&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-1/feed.png&quot; alt=&quot;feed&quot; /&gt;&lt;/p&gt;
 
-&lt;p&gt;&lt;a href=&quot;http://eed3si9n.com/revisiting-implicits-without-import-tax&quot;&gt;revisiting implicits without import tax&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-1/spec.png&quot; alt=&quot;spec&quot; /&gt;&lt;/p&gt;
 
-&lt;p&gt;&lt;a href=&quot;http://www.artima.com/pins1ed/implicit-conversions-and-parameters.html&quot;&gt;Chapter 21 of Programming in Scala, First Edition&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-1/action.png&quot; alt=&quot;action&quot; /&gt;&lt;/p&gt;
 
-&lt;p&gt;&lt;a href=&quot;http://ropas.snu.ac.kr/~bruno/papers/TypeClasses.pdf&quot;&gt;Type Classes as Objects and Implicits&lt;/a&gt;&lt;/p&gt;
+&lt;h5 id=&quot;section-1&quot;&gt;推送方式2: 消息文本分享&lt;/h5&gt;
 
+&lt;p&gt;&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-1/spec2.png&quot; alt=&quot;feed&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-1/action2.png&quot; alt=&quot;feed&quot; /&gt;&lt;/p&gt;
 </description>
       </item>
     
       <item>
-        <title>AKKA的日志： slf4j，logback和其他</title>
-        <link>xun.im/2015/04/15/akka-logging/</link>
-        <pubDate>Wed, 15 Apr 2015 00:00:00 +0800</pubDate>
+        <title>例3:微信分享链接推送到RSS源</title>
+        <link>xun.im/2017/04/23/example-weixin-rss/</link>
+        <pubDate>Sun, 23 Apr 2017 00:00:00 +0800</pubDate>
         <author>wuhx</author>
-        <description>&lt;p&gt;作为一个“搞kernel的”，对日志的理解不过是printk的EMERG,INFO,DEBUG等各种level，关键时刻还是得dump内存，上gcc单步跟踪。但在到处是异步并发，远程分布式通信的jdk世界，日志成了定位问题最重要甚至是唯一的手段。在akka上尤为如此。&lt;/p&gt;
+        <description>&lt;p&gt;本例介绍如何实现将微信分享的链接加入到一个私人的RSS Feed。&lt;br /&gt;
+&lt;strong&gt;原理&lt;/strong&gt;：&lt;br /&gt;
+用户从微信或其他App分享一条链接给微信机器人，对应的微信Feed生成一条微信记录，Spec条件检查通过后，RssAction将其加入用户私有RSS源供阅读器订阅。&lt;/p&gt;
 
-&lt;p&gt;akka日志的官方文档&lt;a href=&quot;http://doc.akka.io/docs/akka/current/scala/logging.html&quot;&gt;http://doc.akka.io/docs/akka/current/scala/logging.html&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;注意：&lt;br /&gt;
+1. 微信Feed作为一个数据源会publish给所有的订阅者，所以如果你已经设置了微信推送到Kindle，这里再设置推送到Rss并不会冲突。&lt;br /&gt;
+2. RSS源地址暂不支持自定义，请在运行日志中查找类似https://myrss.oss-cn-shanghai.aliyuncs.com/58d098695c497d0057d23b9b/feed.xml 的地址&lt;/p&gt;
 
-&lt;p&gt;akka日志功能是基于slf4j构建的。对于不熟悉java的人，slf4j，log4j，logback等基本上是这样一个关系：SLF4J是一套log接口，java.util.logging, logback, log4j等是具体的实现，而logback已逐渐取代log4j成为事实标准。&lt;/p&gt;
+&lt;h5 id=&quot;section&quot;&gt;详细步骤&lt;/h5&gt;
 
-&lt;p&gt;所以要使用akka的日志，除了akka-slf4j还需增加logback依赖。&lt;/p&gt;
+&lt;h5 id=&quot;feed&quot;&gt;Feed设置&lt;/h5&gt;
+&lt;p&gt;&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-1/feed.png&quot; alt=&quot;feed&quot; /&gt;&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;libraryDependencies&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;++=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Seq&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;
-  &lt;span class=&quot;s&quot;&gt;&quot;com.typesafe.akka&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;%%&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;akka-actor&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;%&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;akkaVersion&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;
-  &lt;span class=&quot;s&quot;&gt;&quot;com.typesafe.akka&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;%%&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;akka-contrib&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;%&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;akkaVersion&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;
-  &lt;span class=&quot;s&quot;&gt;&quot;com.typesafe.akka&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;%%&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;akka-testkit&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;%&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;akkaVersion&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;
-  &lt;span class=&quot;s&quot;&gt;&quot;com.typesafe.akka&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;%%&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;akka-slf4j&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;%&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;akkaVersion&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;
-  &lt;span class=&quot;s&quot;&gt;&quot;org.scalatest&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;%%&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;scalatest&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;%&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;2.2.4&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;%&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;test&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;
-  &lt;span class=&quot;s&quot;&gt;&quot;ch.qos.logback&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;%&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;logback-classic&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;%&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;1.1.3&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;
-  &lt;span class=&quot;s&quot;&gt;&quot;commons-io&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;%&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;commons-io&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;%&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;2.4&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;%&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;test&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;h5 id=&quot;spec&quot;&gt;Spec设置&lt;/h5&gt;
+&lt;p&gt;&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-1/spec.png&quot; alt=&quot;spec&quot; /&gt;&lt;/p&gt;
 
-&lt;h2 id=&quot;actor&quot;&gt;actor系统中记录日志的三种方法&lt;/h2&gt;
+&lt;h5 id=&quot;action&quot;&gt;Action设置&lt;/h5&gt;
+&lt;p&gt;&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-3/action.png&quot; alt=&quot;action&quot; /&gt;&lt;/p&gt;
+</description>
+      </item>
+    
+      <item>
+        <title>例2:利用搜狗微信搜索推送公众号文章更新到Kindle。</title>
+        <link>xun.im/2017/04/23/example-sougou-to-kindle/</link>
+        <pubDate>Sun, 23 Apr 2017 00:00:00 +0800</pubDate>
+        <author>wuhx</author>
+        <description>&lt;p&gt;本例介绍如何设置实现利用搜狗微信搜索监控公众号文章更新并推送到Kindle。&lt;br /&gt;
+&lt;strong&gt;原理&lt;/strong&gt;：&lt;br /&gt;
+根据用户提供的公众号微信ID和Cron定时设置，定时访问&lt;a href=&quot;http://weixin.sogou.com/weixin?type=1&amp;amp;s_from=input&amp;amp;query=idxgh2013&amp;amp;ie=utf8&quot;&gt;搜狗微信搜索页面&lt;/a&gt;并点击第一个搜索结果，列出该公众号最新群发的文章列表，并将该列表和上一次执行时获取的列表对比，判断是否有更新文章，如果有更新，则将更新的文章推送到Kindle。&lt;/p&gt;
 
-&lt;h3 id=&quot;actorlogging&quot;&gt;1 通过ActorLogging记录日志&lt;/h3&gt;
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;Feed选择&lt;code class=&quot;highlighter-rouge&quot;&gt;搜狗微信公众号文章更新&lt;/code&gt;，输入公众号的微信ID并配置好Cron定时器，Cron定时器的介绍请看&lt;a href=&quot;/2017/04/23/setting-cron/&quot;&gt;这里&lt;/a&gt;。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Spec选择&lt;code class=&quot;highlighter-rouge&quot;&gt;列表触发&lt;/code&gt; ，触发方式选择&lt;code class=&quot;highlighter-rouge&quot;&gt;返回列表有更新&lt;/code&gt;&lt;/p&gt;
 
-&lt;p&gt;akka提供了ActorLogging这个trait，方便在actor中记录日志。&lt;/p&gt;
+    &lt;p&gt;这里需要注意的是：&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;MasterActor&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;extends&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Actor&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;with&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;akka&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;actor&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;ActorLogging&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-&lt;span class=&quot;err&quot;&gt; &lt;/span&gt; &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;receive&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-&lt;span class=&quot;err&quot;&gt;   &lt;/span&gt; &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;_&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;err&quot;&gt;    &lt;/span&gt; &lt;span class=&quot;n&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;debug&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;debug log&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;err&quot;&gt;    &lt;/span&gt; &lt;span class=&quot;n&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;info&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;info log&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;err&quot;&gt;    &lt;/span&gt; &lt;span class=&quot;n&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;warning&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;warning log&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;err&quot;&gt;    &lt;/span&gt; &lt;span class=&quot;n&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;error&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;error log&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;err&quot;&gt; &lt;/span&gt; &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+    &lt;p&gt;列表更新要设置一个参考字段，用于判定列表是否更新，可以把它理解为数据库中的主键，只要两条记录的主键值相等，就可以判断是同一条记录。否则需要将记录中的说有字段都比较一下才能确定两条记录是否相同。&lt;/p&gt;
 
-&lt;h3 id=&quot;akkaeventlogging&quot;&gt;2 通过akka.event.Logging记录日志　&lt;/h3&gt;
+    &lt;p&gt;由于第一步选择的&lt;code class=&quot;highlighter-rouge&quot;&gt;搜狗微信公众号文章更新&lt;/code&gt;Feed的输出有&lt;code class=&quot;highlighter-rouge&quot;&gt;标题&lt;/code&gt;和&lt;code class=&quot;highlighter-rouge&quot;&gt;URL&lt;/code&gt;两个字段，这里会列出这两个选项，这里选择&lt;code class=&quot;highlighter-rouge&quot;&gt;标题&lt;/code&gt;作为参考字段。&lt;/p&gt;
 
-&lt;p&gt;ActorLogging这个trait只能mix到Actor类上。&lt;/p&gt;
+    &lt;p&gt;也就是说，只要两条记录的标题字段相同就判断它们是同一条记录。&lt;/p&gt;
 
-&lt;p&gt;在其他非actor类上，如果能访问到actor系统，可利用它的event stream进行log。&lt;/p&gt;
+    &lt;p&gt;这么做的原因是：weixin.sogou.com上的公众号文章链接都是临时链接，每次返回的结果都不一样，需要排除其干扰。&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;akka.event.Logging&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;log&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Logging&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;system&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;eventStream&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;log prefix:&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;debug&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;debug log&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;h5 id=&quot;section&quot;&gt;详细步骤&lt;/h5&gt;
 
-&lt;p&gt;也可直接使用ActorSystem内置的LoggingAdapter。&lt;/p&gt;
+&lt;h5 id=&quot;id&quot;&gt;1.获取公众号微信ID&lt;/h5&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;system&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;akka&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;actor&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;ActorSystem&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;system&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;error&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;log from ActorSystem&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;p&gt;&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-2/search.png&quot; alt=&quot;feed&quot; /&gt;&lt;/p&gt;
 
-&lt;h3 id=&quot;slf4jlogback&quot;&gt;3 直接通过slf4j访问logback记录日志&lt;/h3&gt;
+&lt;h5 id=&quot;feed&quot;&gt;2.设置Feed&lt;/h5&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;org.slf4j.LoggerFactory&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;log&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;LoggerFactory&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;getLogger&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;getClass&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;debug&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Hello Logger!&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;p&gt;&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-2/feed.png&quot; alt=&quot;feed&quot; /&gt;&lt;/p&gt;
 
-&lt;p&gt;这3种log方式因为用的都是同一个logback实例，所以输出是统一的，区别是akka提供的log接口能够在记录时自动带上actor地址等信息，能极大的方便定位问题。&lt;/p&gt;
+&lt;h5 id=&quot;spec&quot;&gt;3.设置Spec&lt;/h5&gt;
 
-&lt;h2 id=&quot;logback&quot;&gt;logback的配置&lt;/h2&gt;
+&lt;p&gt;&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-2/spec.png&quot; alt=&quot;feed&quot; /&gt;&lt;/p&gt;
 
-&lt;p&gt;上面说了半天好像和printk的level级别没有太大差别，java的log系统最强大的地方在于它的可配置性。&lt;/p&gt;
+&lt;h5 id=&quot;action&quot;&gt;4.设置Action&lt;/h5&gt;
 
-&lt;p&gt;如下面这个logback配置，可把ERROR及以上级别的打印输出到akka.log文件，同时把DEBUG及以上级别的打印输出到控制台。还可以配置输出格式，自动在log内容上附带一些上下文信息，如&lt;code class=&quot;highlighter-rouge&quot;&gt;%X{akkaSource}&lt;/code&gt;这个变量会解析为发起log的具体actor地址，这在系统上百万actor并发时，将成为跟踪问题重要线索。如果输出到日志文件，还可控制文件体积的最大值，选择原有内容是追加还是覆盖。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-2/action.png&quot; alt=&quot;feed&quot; /&gt;&lt;/p&gt;
+</description>
+      </item>
+    
+      <item>
+        <title>例8:利用RestApi Action实现方糖微信通知</title>
+        <link>xun.im/2017/04/23/example-rest-api/</link>
+        <pubDate>Sun, 23 Apr 2017 00:00:00 +0800</pubDate>
+        <author>wuhx</author>
+        <description>&lt;p&gt;本例介绍利用RestApi Action实现方糖微信通知&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nt&quot;&gt;&amp;lt;configuration&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;appender&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;FILE&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;ch.qos.logback.core.FileAppender&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;file&amp;gt;&lt;/span&gt;akka.log&lt;span class=&quot;nt&quot;&gt;&amp;lt;/file&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;filter&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;ch.qos.logback.classic.filter.ThresholdFilter&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-            &lt;span class=&quot;nt&quot;&gt;&amp;lt;level&amp;gt;&lt;/span&gt;ERROR&lt;span class=&quot;nt&quot;&gt;&amp;lt;/level&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;/filter&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;append&amp;gt;&lt;/span&gt;false&lt;span class=&quot;nt&quot;&gt;&amp;lt;/append&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- encoders are assigned the type
-             ch.qos.logback.classic.encoder.PatternLayoutEncoder by default --&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;encoder&amp;gt;&lt;/span&gt;
-            &lt;span class=&quot;c&quot;&gt;&amp;lt;!--&amp;lt;pattern&amp;gt;%date{ISO8601} %-5level %logger{36} %X{sourceThread} - %msg%n&amp;lt;/pattern&amp;gt;--&amp;gt;&lt;/span&gt;
-            &lt;span class=&quot;nt&quot;&gt;&amp;lt;pattern&amp;gt;&lt;/span&gt;%date{ISO8601} %-5level %logger{36} %X{akkaSource} - %msg%n&lt;span class=&quot;nt&quot;&gt;&amp;lt;/pattern&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;/encoder&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/appender&amp;gt;&lt;/span&gt;
+&lt;p&gt;&lt;a href=&quot;http://sc.ftqq.com/&quot;&gt;方糖&lt;/a&gt;是一个服务号实现的微信通知服务。CloudMonad除了支持利用自己的微信机器人发送微信消息外，也可通过RestApi调用方糖接口发送微信消息。&lt;/p&gt;
 
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;appender&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;STDOUT&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;ch.qos.logback.core.ConsoleAppender&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;encoder&amp;gt;&lt;/span&gt;
-            &lt;span class=&quot;nt&quot;&gt;&amp;lt;pattern&amp;gt;&lt;/span&gt;%date{ISO8601} %-5level %logger{36} %X{akkaSource} - %msg%n&lt;span class=&quot;nt&quot;&gt;&amp;lt;/pattern&amp;gt;&lt;/span&gt;
-            &lt;span class=&quot;c&quot;&gt;&amp;lt;!--&amp;lt;pattern&amp;gt;%X{akkaTimestamp} %-5level %logger{36} %X{akkaSource} - %msg%n&amp;lt;/pattern&amp;gt;--&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;/encoder&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/appender&amp;gt;&lt;/span&gt;
+&lt;p&gt;在RestAction设置中，将url设置为你的方糖接口地址，method选择GET即可。&lt;/p&gt;
 
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;root&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;level=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;DEBUG&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;appender-ref&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;ref=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;STDOUT&quot;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;/&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;appender-ref&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;ref=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;FILE&quot;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;/&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/root&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;/configuration&amp;gt;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;p&gt;&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-8/action.png&quot; alt=&quot;feed&quot; /&gt;&lt;/p&gt;
+</description>
+      </item>
+    
+      <item>
+        <title>例4:京东价格变化微信通知</title>
+        <link>xun.im/2017/04/23/example-jd-price-monitor/</link>
+        <pubDate>Sun, 23 Apr 2017 00:00:00 +0800</pubDate>
+        <author>wuhx</author>
+        <description>&lt;p&gt;本例介绍如何定时监控京东商品的价格和优惠信息，并在检测到期待变化后发送微信消息通知用户。&lt;/p&gt;
 
-&lt;p&gt;日志的每种输出方式对应一个appender，除了上面用到的ConsoleAppender和FileAppender，还有通过网络发送日志到远程日志服务器的Appender，用户也可自定义appender，如日志云服务提供商loggly就有自己的&lt;a href=&quot;https://github.com/qos-ch/logback-extensions/wiki/Loggly&quot;&gt;Appender&lt;/a&gt;。分布式消息系统kafka也能通过&lt;a href=&quot;http://kafka.apache.org/07/quickstart.html&quot;&gt;Appender&lt;/a&gt;直接在某个topic上接收log日志。&lt;/p&gt;
+&lt;p&gt;原理：&lt;/p&gt;
 
-&lt;p&gt;更多语法参考：http://logback.qos.ch/manual/appenders.html&lt;/p&gt;
+&lt;p&gt;由用户设置的商品链接地址和Cron定时器驱动，定时访问京东商品页面，抓取价格和优惠信息。检测到期待变化后（如价格小于某个值或有新的优惠），将京东feed的输出按用户定义的组合，生成一条通知消息，输入给微信Action，实现微信通知用户。&lt;/p&gt;
 
-&lt;p&gt;最后推荐一篇LinkedIn工程师关于日志的长文&lt;a href=&quot;https://engineering.linkedin.com/distributed-systems/log-what-every-software-engineer-should-know-about-real-time-datas-unifying&quot;&gt;The Log: What every software engineer should know about real-time data’s unifying abstraction&lt;/a&gt;，当然他说的日志已经超出了简单记录调试信息的范畴了，但其中一些观点很有意思，如数据库其实是一种特殊形式的日志，按照这个思路所谓大数据其实就是如何翻日志了，日志将是整个系统最重要的资产。&lt;/p&gt;
+&lt;h5 id=&quot;section&quot;&gt;详细步骤&lt;/h5&gt;
 
-&lt;p&gt;相关代码已提交&lt;a href=&quot;https://github.com/wuhx/akka-logging-example&quot;&gt;github&lt;/a&gt;, 欢迎fork交流。&lt;/p&gt;
+&lt;h5 id=&quot;feed&quot;&gt;Feed&lt;/h5&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-4/feed.png&quot; alt=&quot;feed&quot; /&gt;&lt;/p&gt;
+
+&lt;h5 id=&quot;cron&quot;&gt;Cron配置：每天零点执行&lt;/h5&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-4/cron.png&quot; alt=&quot;feed&quot; /&gt;&lt;/p&gt;
+
+&lt;h5 id=&quot;action&quot;&gt;Action&lt;/h5&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-4/spec.png&quot; alt=&quot;feed&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-4/action.png&quot; alt=&quot;feed&quot; /&gt;&lt;/p&gt;
+</description>
+      </item>
+    
+      <item>
+        <title>例5:使用FetchUrl实现将任意网站作为输入源</title>
+        <link>xun.im/2017/04/23/example-fetch-url/</link>
+        <pubDate>Sun, 23 Apr 2017 00:00:00 +0800</pubDate>
+        <author>wuhx</author>
+        <description>&lt;p&gt;本例介绍如何使用&lt;code class=&quot;highlighter-rouge&quot;&gt;FetchUrl&lt;/code&gt;实现将任意网站作为输入源。&lt;/p&gt;
+
+&lt;p&gt;实现了一个比较简单的功能：&lt;br /&gt;
+每天零点（北京时间)访问一次Scala官网，看一下版本号有没有更新，如果有新版，发一条微信通知消息。&lt;/p&gt;
+
+&lt;h5 id=&quot;feed&quot;&gt;Feed介绍：&lt;/h5&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;FetchUrl&lt;/code&gt;抓取任意网页，并提取其中某个元素的内容。&lt;br /&gt;
+提取动作由元素选择符和元素提取方式一起完成。&lt;br /&gt;
+其中元素提取方式有三种&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;html：提取元素的html代码&lt;/li&gt;
+  &lt;li&gt;text：提取元素的文本内容&lt;/li&gt;
+  &lt;li&gt;attr:提取元素的某个attr&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;strong&gt;步骤&lt;/strong&gt;：&lt;br /&gt;
+用Chrome访问&lt;a href=&quot;http://scala-lang.org/&quot;&gt;Scala官网&lt;/a&gt;，打开Inspect面板，定位到显示Scala版本号的元素，右键&lt;code class=&quot;highlighter-rouge&quot;&gt;Copy selector&lt;/code&gt;，获取到元素选择符，元素提取方式指定text。&lt;/p&gt;
+
+&lt;h5 id=&quot;feed-1&quot;&gt;Feed&lt;/h5&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-5/feed.png&quot; alt=&quot;feed&quot; /&gt;&lt;/p&gt;
+
+&lt;h5 id=&quot;spec&quot;&gt;Spec&lt;/h5&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-5/spec.png&quot; alt=&quot;feed&quot; /&gt;&lt;/p&gt;
+
+&lt;h5 id=&quot;action&quot;&gt;Action&lt;/h5&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-5/action.png&quot; alt=&quot;feed&quot; /&gt;&lt;/p&gt;
+</description>
+      </item>
+    
+      <item>
+        <title>例7:微信公众号自动发文</title>
+        <link>xun.im/2017/04/23/example-auto-weixin-mp/</link>
+        <pubDate>Sun, 23 Apr 2017 00:00:00 +0800</pubDate>
+        <author>wuhx</author>
+        <description>&lt;p&gt;原理：&lt;br /&gt;
+登录微信公众号后台发文章时，必须由授权用户用微信扫描才能登录。 本例将用&lt;a href=&quot;/2017/04/23/imhuman/&quot;&gt;imhuman服务&lt;/a&gt;服务远程实现这一步。&lt;/p&gt;
+
+&lt;p&gt;注意：&lt;br /&gt;
+本例执行成功后，可手动登录公众号后台，到&lt;code class=&quot;highlighter-rouge&quot;&gt;素材管理&lt;/code&gt;查看新建的文章。没有实现自动群发。&lt;/p&gt;
+
+&lt;h5 id=&quot;section&quot;&gt;步骤&lt;/h5&gt;
+
+&lt;h5 id=&quot;feed&quot;&gt;Feed&lt;/h5&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-6/feed.png&quot; alt=&quot;feed&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Spec&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-6/spec.png&quot; alt=&quot;feed&quot; /&gt;&lt;/p&gt;
+
+&lt;h5 id=&quot;action&quot;&gt;Action&lt;/h5&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-7/action.png&quot; alt=&quot;feed&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;创建成功后可在详情里，点击闪电按钮手动触发，测试效果。如果执行失败可以查看失败时的浏览器截图。&lt;br /&gt;
+&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-7/trigger.png&quot; alt=&quot;feed&quot; /&gt;&lt;/p&gt;
 </description>
       </item>
     

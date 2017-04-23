@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!-- meta information -->
+<meta charset="utf-8">
+<meta name="description" 
+      content="本例介绍如何设置实现利用搜狗微信搜索监控公众号文章更新并推送到Kindle。**原理**：根据用户提供的公众号微信ID和Cron定时设置，定时访问[搜狗微信搜索页面](http://weixin.sogou.com/weixin?ty..." >
+<meta name="author" content="wuhx">
+
+<!-- Enable responsiveness on mobile devices-->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+<!-- title -->
+<title>例2:利用搜狗微信搜索推送公众号文章更新到Kindle。 &middot; Not my idea</title>
+
+<!-- icons -->
+<link rel="shortcut icon" href="/public/images/favicon.ico" />
+
+<!-- stylesheets -->
+<link rel="stylesheet" href="/public/css/responsive.gs.12col.css">
+<link rel="stylesheet" href="/public/css/animate.min.css">
+<link rel="stylesheet" href="/public/css/main.css">
+
+<!-- Google fonts -->
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,400italic&subset=latin-ext">
+
+
+
+<!-- feed links -->
+<link rel="alternate" href="xun.im/feed.xml" type="application/rss+xml" title="">
+
+  </head>
+  <body>
+    <div class="container azul">
+      <header class="top row gutters">
+        <div class="col span_2 center">
+          <!-- TODO: add baseurl to the logo link -->
+          <a href="xun.im" id="logo" title="Not my idea"
+             style="background-image: url(/public/images/logo.png);"></a>
+        </div>
+        <nav class="col span_10 top-navbar">
+  
+  <a href="/" title="Home"
+     >Home</a>
+  
+  <a href="/about" title="About"
+     >About</a>
+  
+</nav>
+
+      </header>
+
+      <article class="single row gutters">
+  <time class="published" datetime="2017-04-23">23 April 2017</time>
+  <h2>例2:利用搜狗微信搜索推送公众号文章更新到Kindle。</h2>
+
+  <p>本例介绍如何设置实现利用搜狗微信搜索监控公众号文章更新并推送到Kindle。<br />
+<strong>原理</strong>：<br />
+根据用户提供的公众号微信ID和Cron定时设置，定时访问<a href="http://weixin.sogou.com/weixin?type=1&amp;s_from=input&amp;query=idxgh2013&amp;ie=utf8">搜狗微信搜索页面</a>并点击第一个搜索结果，列出该公众号最新群发的文章列表，并将该列表和上一次执行时获取的列表对比，判断是否有更新文章，如果有更新，则将更新的文章推送到Kindle。</p>
+
+<ol>
+  <li>
+    <p>Feed选择<code class="highlighter-rouge">搜狗微信公众号文章更新</code>，输入公众号的微信ID并配置好Cron定时器，Cron定时器的介绍请看<a href="/2017/04/23/setting-cron/">这里</a>。</p>
+  </li>
+  <li>
+    <p>Spec选择<code class="highlighter-rouge">列表触发</code> ，触发方式选择<code class="highlighter-rouge">返回列表有更新</code></p>
+
+    <p>这里需要注意的是：</p>
+
+    <p>列表更新要设置一个参考字段，用于判定列表是否更新，可以把它理解为数据库中的主键，只要两条记录的主键值相等，就可以判断是同一条记录。否则需要将记录中的说有字段都比较一下才能确定两条记录是否相同。</p>
+
+    <p>由于第一步选择的<code class="highlighter-rouge">搜狗微信公众号文章更新</code>Feed的输出有<code class="highlighter-rouge">标题</code>和<code class="highlighter-rouge">URL</code>两个字段，这里会列出这两个选项，这里选择<code class="highlighter-rouge">标题</code>作为参考字段。</p>
+
+    <p>也就是说，只要两条记录的标题字段相同就判断它们是同一条记录。</p>
+
+    <p>这么做的原因是：weixin.sogou.com上的公众号文章链接都是临时链接，每次返回的结果都不一样，需要排除其干扰。</p>
+  </li>
+</ol>
+
+<h5 id="section">详细步骤</h5>
+
+<h5 id="id">1.获取公众号微信ID</h5>
+
+<p><img src="http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-2/search.png" alt="feed" /></p>
+
+<h5 id="feed">2.设置Feed</h5>
+
+<p><img src="http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-2/feed.png" alt="feed" /></p>
+
+<h5 id="spec">3.设置Spec</h5>
+
+<p><img src="http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-2/spec.png" alt="feed" /></p>
+
+<h5 id="action">4.设置Action</h5>
+
+<p><img src="http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-2/action.png" alt="feed" /></p>
+
+	
+	<!-- duoshuo box -->
+	<div class="ds-thread" data-thread-key="/2017/04/23/example-sougou-to-kindle" data-title="例2:利用搜狗微信搜索推送公众号文章更新到Kindle。" data-url="xun.im/2017/04/23/example-sougou-to-kindle/"></div>
+	<!-- duoshuo box end -->
+	
+</article>
+
+
+      <footer>
+        <p>
+          This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-nd/2.5/deed.zh">署名-非商业性使用-禁止演绎 </a>License.
+        </p>
+      </footer>
+    </div>
+
+    <!-- scripts -->
+		<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+		
+	<link rel="stylesheet" href="/public/css/tomorrow.css">
+	<script src="/public/js/highlight.pack.js"></script>
+	<script>hljs.initHighlightingOnLoad();</script>
+	
+    <script src="/public/js/jquery.min.js"></script>
+    <script src="/public/js/jquery.fitvids.js"></script>
+    <script>
+      $(document).ready(function(){
+        $("article").fitVids();
+      });
+    </script>
+		
+		<!-- google analystics for xun.im -->
+		<script>
+		  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+		  ga('create', 'UA-31449466-1', 'auto');
+		  ga('send', 'pageview');
+		</script>
+		<!-- baidu site for xun.im -->
+		<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "//hm.baidu.com/hm.js?b62786d99652b034add78b003086816f";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+		</script>
+		<!-- duoshuo common -->
+		<script type="text/javascript">
+		var duoshuoQuery = {short_name:"5site"};
+			(function() {
+				var ds = document.createElement('script');
+				ds.type = 'text/javascript';ds.async = true;
+				ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+				ds.charset = 'UTF-8';
+				(document.getElementsByTagName('head')[0] 
+				 || document.getElementsByTagName('body')[0]).appendChild(ds);
+			})();
+			</script>
+		<!-- duoshuo end -->
+		
+		
+  </body>
+</html>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!-- meta information -->
+<meta charset="utf-8">
+<meta name="description" 
+      content="花了几个月时间全栈用Scala做了一个网站，暂时定名为CloudMonad，意为云端执行单元。TLDR;CloudMonad可以这样玩：1. 发一条微信消息，推送到你的Kindle或者一个私有的Rss源。2. 定时获取京东商品的价格和..." >
+<meta name="author" content="wuhx">
+
+<!-- Enable responsiveness on mobile devices-->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+<!-- title -->
+<title>CloudMonad &middot; Not my idea</title>
+
+<!-- icons -->
+<link rel="shortcut icon" href="/public/images/favicon.ico" />
+
+<!-- stylesheets -->
+<link rel="stylesheet" href="/public/css/responsive.gs.12col.css">
+<link rel="stylesheet" href="/public/css/animate.min.css">
+<link rel="stylesheet" href="/public/css/main.css">
+
+<!-- Google fonts -->
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,400italic&subset=latin-ext">
+
+
+
+<!-- feed links -->
+<link rel="alternate" href="xun.im/feed.xml" type="application/rss+xml" title="">
+
+  </head>
+  <body>
+    <div class="container azul">
+      <header class="top row gutters">
+        <div class="col span_2 center">
+          <!-- TODO: add baseurl to the logo link -->
+          <a href="xun.im" id="logo" title="Not my idea"
+             style="background-image: url(/public/images/logo.png);"></a>
+        </div>
+        <nav class="col span_10 top-navbar">
+  
+  <a href="/" title="Home"
+     >Home</a>
+  
+  <a href="/about" title="About"
+     >About</a>
+  
+</nav>
+
+      </header>
+
+      <article class="single row gutters">
+  <time class="published" datetime="2017-04-23">23 April 2017</time>
+  <h2>CloudMonad</h2>
+
+  <p>花了几个月时间全栈用Scala做了一个网站，暂时定名为CloudMonad，意为云端执行单元。</p>
+
+<p>TLDR;<br />
+CloudMonad可以这样玩：</p>
+
+<ol>
+  <li>发一条微信消息，推送到你的Kindle或者一个私有的Rss源。</li>
+  <li>定时获取京东商品的价格和优惠信息，在满足指定条件后发送一条微信通知消息。</li>
+  <li>定时访问12306网站查询或购买车票。</li>
+  <li>定时登录微信公众号后台发文。</li>
+</ol>
+
+<p>这些功能只是CloudMonad的应用示例，都是在一个前端SPA应用页面用Json配置生成，新增功能对后端完全透明。</p>
+
+<h5 id="cloudmonad3feedspecaction">CloudMonad主要有3个模块：Feed，Spec和Action。</h5>
+
+<ol>
+  <li>
+    <p>Feed是数据输入源，由定时执行的爬虫或者微信消息等第三方部件持续提供。</p>
+  </li>
+  <li>
+    <p>Spec是对数据源数据的检测，符合特定条件后触发后续Action，否则静默处理。</p>
+  </li>
+  <li>
+    <p>Action是最终执行动作，其输入由触发该Action的Feed提供，完成某一特定任务。</p>
+  </li>
+</ol>
+
+<p>组合这3个模块，可以实现各种有意思的功能，比如：</p>
+
+<p><a href="/2017/04/23/example-weixin-to-kindle/">例1:微信消息Kindle推送</a><br />
+<a href="/2017/04/23/example-sougou-to-kindle/">例2:利用搜狗微信搜索监控公众号文章更新并推送到Kindle</a><br />
+<a href="/2017/04/23/example-weixin-rss/">例3:微信分享链接推送到RSS源</a><br />
+<a href="/2017/04/23/example-jd-price-monitor/">例4:京东价格变化微信通知</a><br />
+<a href="/2017/04/23/example-fetch-url/">例5:使用FetchUrl实现将任意网站作为输入源</a><br />
+<a href="/2017/04/23/example-12306/">例6:12306车票购买</a><br />
+<a href="/2017/04/23/example-auto-weixin-mp/">例7:微信公众号自动发文</a><br />
+<a href="/2017/04/23/example-rest-api/">例8:利用RestApi Action实现方糖微信通知</a></p>
+
+<h5 id="ifttt">和IFTTT的区别？</h5>
+
+<p><a href="https://ifttt.com/">IFTTT</a>的成功依赖于国外开放的API环境，通过和Facebook，Twitter，Gmail等帐号绑定即可获得授权实现大量功能。而国内各厂商相对更封闭一点，通过API授权能获取的功能很少，有些甚至根本不提供，这也是IFTTT的国内山寨版没有成形的重要原因。</p>
+
+<p>同时即使在国外，第三方授权方式在功能会相对受限，适用场景比较窄，这很容易理解，没有一家公司会希望用户只需通过第三方服务访问自己。</p>
+
+<p>CloudMonad走的是另外一条途径：通过自动化的浏览器模拟用户行为实现功能，理论上只要用户通过浏览器能完成的功能，CloudMonad的都能提供。</p>
+
+<h5 id="httpzaoshuio-importyhttpswwwimportio">和<a href="http://zaoshu.io/">造数</a>以及 <a href="https://www.import.io/">importy</a>的区别</h5>
+
+<p>相同的地方是都用了爬虫技术，造数和importy更接近于传统意义上的爬虫，主要目的是批量获取数据。而CloudMonad更像是一个自动化的浏览器，注重的是浏览过程产生的结果，这个结果可能是搜集到一些数据，也有可能只是浏览过程中产生的一些side effect（如购买了某件商品，发送了一条评论）。</p>
+
+<p>换句话说，造数和importy满足的是爬取大量数据然后离线分析的需求，CloudMonad只想满足一个偷懒的用户。</p>
+
+<h5 id="cloudmonad">CloudMonad如何应对网站的反爬虫措施</h5>
+
+<p>CloudMonad不是爬虫，因而可以用更灵活的方式来处理一些普通爬虫无法处理的验证措施。<br />
+我专门为它做了一个名为<a href="/2017/04/23/imhuman/">imhuman</a>的验证码处理模块，可完美处理12306和微信扫码验证。</p>
+
+<h5 id="section">如何试用</h5>
+
+<p><a href="http://127.0.0.1:4000/2017/04/23/account-setting/">注册和绑定</a></p>
+
+<h5 id="section-1">附：</h5>
+
+<p><a href="/2017/04/23/setting-cron/">Cron配置</a>: 用于生成Cron定时器的UI</p>
+
+<p><a href="/2017/04/23/setting-zhizhu/">爬虫配置</a>: 用于个性化爬虫</p>
+
+<p>关于CloudMonad的问题和建议可<a href="https://github.com/wuhx/neveread.com/issues">在此</a>提issue</p>
+
+	
+	<!-- duoshuo box -->
+	<div class="ds-thread" data-thread-key="/2017/04/23/cloudmonad" data-title="CloudMonad" data-url="xun.im/2017/04/23/cloudmonad/"></div>
+	<!-- duoshuo box end -->
+	
+</article>
+
+
+      <footer>
+        <p>
+          This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-nd/2.5/deed.zh">署名-非商业性使用-禁止演绎 </a>License.
+        </p>
+      </footer>
+    </div>
+
+    <!-- scripts -->
+		<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+		
+	<link rel="stylesheet" href="/public/css/tomorrow.css">
+	<script src="/public/js/highlight.pack.js"></script>
+	<script>hljs.initHighlightingOnLoad();</script>
+	
+    <script src="/public/js/jquery.min.js"></script>
+    <script src="/public/js/jquery.fitvids.js"></script>
+    <script>
+      $(document).ready(function(){
+        $("article").fitVids();
+      });
+    </script>
+		
+		<!-- google analystics for xun.im -->
+		<script>
+		  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+		  ga('create', 'UA-31449466-1', 'auto');
+		  ga('send', 'pageview');
+		</script>
+		<!-- baidu site for xun.im -->
+		<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "//hm.baidu.com/hm.js?b62786d99652b034add78b003086816f";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+		</script>
+		<!-- duoshuo common -->
+		<script type="text/javascript">
+		var duoshuoQuery = {short_name:"5site"};
+			(function() {
+				var ds = document.createElement('script');
+				ds.type = 'text/javascript';ds.async = true;
+				ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+				ds.charset = 'UTF-8';
+				(document.getElementsByTagName('head')[0] 
+				 || document.getElementsByTagName('body')[0]).appendChild(ds);
+			})();
+			</script>
+		<!-- duoshuo end -->
+		
+		
+  </body>
+</html>

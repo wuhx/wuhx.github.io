@@ -1,6 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>xun.im/2017/04/23/setting-zhizhu/</loc>
+    <lastmod>2017-04-23T00:00:00+08:00</lastmod>
+  </url>
+  <url>
+    <loc>xun.im/2017/04/23/setting-cron/</loc>
+    <lastmod>2017-04-23T00:00:00+08:00</lastmod>
+  </url>
+  <url>
+    <loc>xun.im/2017/04/23/imhuman/</loc>
+    <lastmod>2017-04-23T00:00:00+08:00</lastmod>
+  </url>
+  <url>
+    <loc>xun.im/2017/04/23/example-weixin-to-kindle/</loc>
+    <lastmod>2017-04-23T00:00:00+08:00</lastmod>
+  </url>
+  <url>
+    <loc>xun.im/2017/04/23/example-weixin-rss/</loc>
+    <lastmod>2017-04-23T00:00:00+08:00</lastmod>
+  </url>
+  <url>
+    <loc>xun.im/2017/04/23/example-sougou-to-kindle/</loc>
+    <lastmod>2017-04-23T00:00:00+08:00</lastmod>
+  </url>
+  <url>
+    <loc>xun.im/2017/04/23/example-rest-api/</loc>
+    <lastmod>2017-04-23T00:00:00+08:00</lastmod>
+  </url>
+  <url>
+    <loc>xun.im/2017/04/23/example-jd-price-monitor/</loc>
+    <lastmod>2017-04-23T00:00:00+08:00</lastmod>
+  </url>
+  <url>
+    <loc>xun.im/2017/04/23/example-fetch-url/</loc>
+    <lastmod>2017-04-23T00:00:00+08:00</lastmod>
+  </url>
+  <url>
+    <loc>xun.im/2017/04/23/example-auto-weixin-mp/</loc>
+    <lastmod>2017-04-23T00:00:00+08:00</lastmod>
+  </url>
+  <url>
+    <loc>xun.im/2017/04/23/example-12306/</loc>
+    <lastmod>2017-04-23T00:00:00+08:00</lastmod>
+  </url>
+  <url>
+    <loc>xun.im/2017/04/23/cloudmonad/</loc>
+    <lastmod>2017-04-23T00:00:00+08:00</lastmod>
+  </url>
+  <url>
+    <loc>xun.im/2017/04/23/account-setting/</loc>
+    <lastmod>2017-04-23T00:00:00+08:00</lastmod>
+  </url>
+  <url>
     <loc>xun.im/2016/06/02/write-your-own-vpn/</loc>
     <lastmod>2016-06-02T00:00:00+08:00</lastmod>
   </url>

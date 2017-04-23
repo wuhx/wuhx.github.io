@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!-- meta information -->
+<meta charset="utf-8">
+<meta name="description" 
+      content="本例介绍如何实现将微信分享的链接加入到一个私人的RSS Feed。**原理**：用户从微信或其他App分享一条链接给微信机器人，对应的微信Feed生成一条微信记录，Spec条件检查通过后，RssAction将其加入用户私有RSS源供阅..." >
+<meta name="author" content="wuhx">
+
+<!-- Enable responsiveness on mobile devices-->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+<!-- title -->
+<title>例3:微信分享链接推送到RSS源 &middot; Not my idea</title>
+
+<!-- icons -->
+<link rel="shortcut icon" href="/public/images/favicon.ico" />
+
+<!-- stylesheets -->
+<link rel="stylesheet" href="/public/css/responsive.gs.12col.css">
+<link rel="stylesheet" href="/public/css/animate.min.css">
+<link rel="stylesheet" href="/public/css/main.css">
+
+<!-- Google fonts -->
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,400italic&subset=latin-ext">
+
+
+
+<!-- feed links -->
+<link rel="alternate" href="xun.im/feed.xml" type="application/rss+xml" title="">
+
+  </head>
+  <body>
+    <div class="container azul">
+      <header class="top row gutters">
+        <div class="col span_2 center">
+          <!-- TODO: add baseurl to the logo link -->
+          <a href="xun.im" id="logo" title="Not my idea"
+             style="background-image: url(/public/images/logo.png);"></a>
+        </div>
+        <nav class="col span_10 top-navbar">
+  
+  <a href="/" title="Home"
+     >Home</a>
+  
+  <a href="/about" title="About"
+     >About</a>
+  
+</nav>
+
+      </header>
+
+      <article class="single row gutters">
+  <time class="published" datetime="2017-04-23">23 April 2017</time>
+  <h2>例3:微信分享链接推送到RSS源</h2>
+
+  <p>本例介绍如何实现将微信分享的链接加入到一个私人的RSS Feed。<br />
+<strong>原理</strong>：<br />
+用户从微信或其他App分享一条链接给微信机器人，对应的微信Feed生成一条微信记录，Spec条件检查通过后，RssAction将其加入用户私有RSS源供阅读器订阅。</p>
+
+<p>注意：<br />
+1. 微信Feed作为一个数据源会publish给所有的订阅者，所以如果你已经设置了微信推送到Kindle，这里再设置推送到Rss并不会冲突。<br />
+2. RSS源地址暂不支持自定义，请在运行日志中查找类似https://myrss.oss-cn-shanghai.aliyuncs.com/58d098695c497d0057d23b9b/feed.xml 的地址</p>
+
+<h5 id="section">详细步骤</h5>
+
+<h5 id="feed">Feed设置</h5>
+<p><img src="http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-1/feed.png" alt="feed" /></p>
+
+<h5 id="spec">Spec设置</h5>
+<p><img src="http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-1/spec.png" alt="spec" /></p>
+
+<h5 id="action">Action设置</h5>
+<p><img src="http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-3/action.png" alt="action" /></p>
+
+	
+	<!-- duoshuo box -->
+	<div class="ds-thread" data-thread-key="/2017/04/23/example-weixin-rss" data-title="例3:微信分享链接推送到RSS源" data-url="xun.im/2017/04/23/example-weixin-rss/"></div>
+	<!-- duoshuo box end -->
+	
+</article>
+
+
+      <footer>
+        <p>
+          This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-nd/2.5/deed.zh">署名-非商业性使用-禁止演绎 </a>License.
+        </p>
+      </footer>
+    </div>
+
+    <!-- scripts -->
+		<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+		
+	<link rel="stylesheet" href="/public/css/tomorrow.css">
+	<script src="/public/js/highlight.pack.js"></script>
+	<script>hljs.initHighlightingOnLoad();</script>
+	
+    <script src="/public/js/jquery.min.js"></script>
+    <script src="/public/js/jquery.fitvids.js"></script>
+    <script>
+      $(document).ready(function(){
+        $("article").fitVids();
+      });
+    </script>
+		
+		<!-- google analystics for xun.im -->
+		<script>
+		  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+		  ga('create', 'UA-31449466-1', 'auto');
+		  ga('send', 'pageview');
+		</script>
+		<!-- baidu site for xun.im -->
+		<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "//hm.baidu.com/hm.js?b62786d99652b034add78b003086816f";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+		</script>
+		<!-- duoshuo common -->
+		<script type="text/javascript">
+		var duoshuoQuery = {short_name:"5site"};
+			(function() {
+				var ds = document.createElement('script');
+				ds.type = 'text/javascript';ds.async = true;
+				ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+				ds.charset = 'UTF-8';
+				(document.getElementsByTagName('head')[0] 
+				 || document.getElementsByTagName('body')[0]).appendChild(ds);
+			})();
+			</script>
+		<!-- duoshuo end -->
+		
+		
+  </body>
+</html>
