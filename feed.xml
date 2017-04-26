@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Not my idea</title>
-    <link>xun.im</link>
-    <atom:link href="xun.im/feed.xml" rel="self" type="application/rss+xml" />
+    <link>http://xun.im</link>
+    <atom:link href="http://xun.im/feed.xml" rel="self" type="application/rss+xml" />
     <description>personal blog, scala, akka,</description>
     <language>en-us</language>
-    <pubDate>Wed, 26 Apr 2017 08:40:28 +0800</pubDate>
-    <lastBuildDate>Wed, 26 Apr 2017 08:40:28 +0800</lastBuildDate>
+    <pubDate>Wed, 26 Apr 2017 10:31:19 +0800</pubDate>
+    <lastBuildDate>Wed, 26 Apr 2017 10:31:19 +0800</lastBuildDate>
 
     
       <item>
         <title>微信机器人技术总结</title>
-        <link>xun.im/2017/04/26/weixin-robots-tecnicical-review/</link>
+        <link>http://xun.im/2017/04/26/weixin-robots-tecnicical-review/</link>
         <pubDate>Wed, 26 Apr 2017 00:00:00 +0800</pubDate>
         <author>wuhx</author>
         <description>&lt;p&gt;本文简单从原因，技术原理，稳定性三个角度总结一下微信机器人技术。如有遗漏，欢迎补充。&lt;/p&gt;
@@ -105,7 +105,7 @@
     
       <item>
         <title>模拟浏览器设置</title>
-        <link>xun.im/2017/04/23/setting-zhizhu/</link>
+        <link>http://xun.im/2017/04/23/setting-zhizhu/</link>
         <pubDate>Sun, 23 Apr 2017 00:00:00 +0800</pubDate>
         <author>wuhx</author>
         <description>&lt;p&gt;所有需要用到模拟浏览器的Feed或者Action会在其设置页面有一个IE浏览器图标，点击即可设置。&lt;/p&gt;
@@ -129,7 +129,7 @@
     
       <item>
         <title>定时器设置</title>
-        <link>xun.im/2017/04/23/setting-cron/</link>
+        <link>http://xun.im/2017/04/23/setting-cron/</link>
         <pubDate>Sun, 23 Apr 2017 00:00:00 +0800</pubDate>
         <author>wuhx</author>
         <description>&lt;p&gt;定时器用于定时驱动Feed或Action的执行，其内容是一个Cron表达式。&lt;/p&gt;
@@ -155,7 +155,7 @@
     
       <item>
         <title>imhuman验证码识别</title>
-        <link>xun.im/2017/04/23/imhuman/</link>
+        <link>http://xun.im/2017/04/23/imhuman/</link>
         <pubDate>Sun, 23 Apr 2017 00:00:00 +0800</pubDate>
         <author>wuhx</author>
         <description>&lt;p&gt;imhuman验证码识别的基本原理：&lt;/p&gt;
@@ -190,7 +190,7 @@
     
       <item>
         <title>例1:微信消息Kindle推送</title>
-        <link>xun.im/2017/04/23/example-weixin-to-kindle/</link>
+        <link>http://xun.im/2017/04/23/example-weixin-to-kindle/</link>
         <pubDate>Sun, 23 Apr 2017 00:00:00 +0800</pubDate>
         <author>wuhx</author>
         <description>&lt;p&gt;本例介绍如何设置实现微信消息推送Kindle。&lt;br /&gt;
@@ -237,7 +237,7 @@
     
       <item>
         <title>例3:微信分享链接推送到RSS源</title>
-        <link>xun.im/2017/04/23/example-weixin-rss/</link>
+        <link>http://xun.im/2017/04/23/example-weixin-rss/</link>
         <pubDate>Sun, 23 Apr 2017 00:00:00 +0800</pubDate>
         <author>wuhx</author>
         <description>&lt;p&gt;本例介绍如何实现将微信分享的链接加入到一个私人的RSS Feed。&lt;br /&gt;
@@ -263,7 +263,7 @@
     
       <item>
         <title>例2:利用搜狗微信搜索推送公众号文章更新到Kindle。</title>
-        <link>xun.im/2017/04/23/example-sougou-to-kindle/</link>
+        <link>http://xun.im/2017/04/23/example-sougou-to-kindle/</link>
         <pubDate>Sun, 23 Apr 2017 00:00:00 +0800</pubDate>
         <author>wuhx</author>
         <description>&lt;p&gt;本例介绍如何设置实现利用搜狗微信搜索监控公众号文章更新并推送到Kindle。&lt;br /&gt;
@@ -311,7 +311,7 @@
     
       <item>
         <title>例8:利用RestApi Action实现方糖微信通知</title>
-        <link>xun.im/2017/04/23/example-rest-api/</link>
+        <link>http://xun.im/2017/04/23/example-rest-api/</link>
         <pubDate>Sun, 23 Apr 2017 00:00:00 +0800</pubDate>
         <author>wuhx</author>
         <description>&lt;p&gt;本例介绍利用RestApi Action实现方糖微信通知&lt;/p&gt;
@@ -326,7 +326,7 @@
     
       <item>
         <title>例4:京东价格变化微信通知</title>
-        <link>xun.im/2017/04/23/example-jd-price-monitor/</link>
+        <link>http://xun.im/2017/04/23/example-jd-price-monitor/</link>
         <pubDate>Sun, 23 Apr 2017 00:00:00 +0800</pubDate>
         <author>wuhx</author>
         <description>&lt;p&gt;本例介绍如何定时监控京东商品的价格和优惠信息，并在检测到期待变化后发送微信消息通知用户。&lt;/p&gt;
@@ -355,7 +355,7 @@
     
       <item>
         <title>例5:使用FetchUrl实现将任意网站作为输入源</title>
-        <link>xun.im/2017/04/23/example-fetch-url/</link>
+        <link>http://xun.im/2017/04/23/example-fetch-url/</link>
         <pubDate>Sun, 23 Apr 2017 00:00:00 +0800</pubDate>
         <author>wuhx</author>
         <description>&lt;p&gt;本例介绍如何使用&lt;code class=&quot;highlighter-rouge&quot;&gt;FetchUrl&lt;/code&gt;实现将任意网站作为输入源。&lt;/p&gt;
