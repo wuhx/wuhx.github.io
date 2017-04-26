@@ -6,9 +6,102 @@
     <atom:link href="xun.im/feed.xml" rel="self" type="application/rss+xml" />
     <description>personal blog, scala, akka,</description>
     <language>en-us</language>
-    <pubDate>Sun, 23 Apr 2017 23:46:53 +0800</pubDate>
-    <lastBuildDate>Sun, 23 Apr 2017 23:46:53 +0800</lastBuildDate>
+    <pubDate>Wed, 26 Apr 2017 08:40:28 +0800</pubDate>
+    <lastBuildDate>Wed, 26 Apr 2017 08:40:28 +0800</lastBuildDate>
 
+    
+      <item>
+        <title>微信机器人技术总结</title>
+        <link>xun.im/2017/04/26/weixin-robots-tecnicical-review/</link>
+        <pubDate>Wed, 26 Apr 2017 00:00:00 +0800</pubDate>
+        <author>wuhx</author>
+        <description>&lt;p&gt;本文简单从原因，技术原理，稳定性三个角度总结一下微信机器人技术。如有遗漏，欢迎补充。&lt;/p&gt;
+
+&lt;h5 id=&quot;section&quot;&gt;定义&lt;/h5&gt;
+
+&lt;p&gt;本文的微信机器人是指：用程序手段驱动个人微信号实现自动发送微信消息，邀请好友，发朋友圈等功能。&lt;/p&gt;
+
+&lt;h5 id=&quot;section-1&quot;&gt;原因&lt;/h5&gt;
+
+&lt;p&gt;使用微信机器人的原因：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;微信开放接口限制多，功能少。&lt;/li&gt;
+  &lt;li&gt;省钱（微信开发者要缴年费）&lt;/li&gt;
+  &lt;li&gt;要做一些腾讯协议不允许的事（黑产）&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h4 id=&quot;section-2&quot;&gt;技术原理&lt;/h4&gt;
+
+&lt;p&gt;微信机器人技术大概有这几类：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;用Selenium等技术驱动浏览器登录Web微信，并执行自动操作。&lt;/li&gt;
+  &lt;li&gt;用各种编程语言实现Web微信协议&lt;/li&gt;
+  &lt;li&gt;逆向微信客户端代码增加功能重新打包。&lt;/li&gt;
+  &lt;li&gt;使用Xposed等框架在手机系统层面修改微信客户端行为，实现特定功能。&lt;/li&gt;
+  &lt;li&gt;分析微信通讯协议并重新实现一个第三方客户端。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h5 id=&quot;seleniumweb&quot;&gt;1. Selenium驱动浏览器登录Web微信&lt;/h5&gt;
+
+&lt;p&gt;Selenium驱动浏览器的原理，使这种方式相当于微信官方实现的机器人。&lt;/p&gt;
+
+&lt;p&gt;特点：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;需要手机扫码协助登录&lt;/li&gt;
+  &lt;li&gt;实现简单，无技术门槛。&lt;/li&gt;
+  &lt;li&gt;只能回复消息，拉群，爬公众号，不能发朋友圈。&lt;/li&gt;
+  &lt;li&gt;不稳定，个人测试最长一个月会掉线一次。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h5 id=&quot;web&quot;&gt;2. 编程语言实现Web微信协议&lt;/h5&gt;
+
+&lt;p&gt;特点：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;需要手机扫码协助登录。&lt;/li&gt;
+  &lt;li&gt;实现简单，Web微信为明文协议，分析比较容易，而且网上有开源实现。&lt;/li&gt;
+  &lt;li&gt;只能回复微信消息，拉群，爬公众号，不能发朋友圈。&lt;/li&gt;
+  &lt;li&gt;比Selenium方式更不稳定。&lt;br /&gt;
+测试了JAVA版本，登录几个小时后就掉线了。当然测试时间比较久了，可能软件有更新，也不能代表其他语言版本的稳定性。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h5 id=&quot;section-3&quot;&gt;3. 逆向微信客户端代码增加功能重新打包&lt;/h5&gt;
+
+&lt;p&gt;特点：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;无需手机扫码登录。&lt;/li&gt;
+  &lt;li&gt;实现难度相对较高，需要逆向知识。&lt;/li&gt;
+  &lt;li&gt;属于恶意使用，有被腾讯封号的风险。&lt;/li&gt;
+  &lt;li&gt;能实现回复微信消息，发朋友圈等各种功能。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h5 id=&quot;xposed&quot;&gt;4. Xposed&lt;/h5&gt;
+
+&lt;p&gt;Xposed的原理是在不修改App代码的情况下，Hook各种系统函数或内部函数调用实现修改App功能。&lt;br /&gt;
+因此这种方式除了是否属于腾讯定义的恶意使用，其他和逆向重新打包方式类似。&lt;/p&gt;
+
+&lt;p&gt;特点：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;无需手机扫码登录。&lt;/li&gt;
+  &lt;li&gt;实现难度相对较高，需要逆向知识。&lt;/li&gt;
+  &lt;li&gt;可能会被腾讯认为恶意使用，有被封号的危险。&lt;/li&gt;
+  &lt;li&gt;能实现回复微信消息，发朋友圈等各种功能。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h5 id=&quot;section-4&quot;&gt;5. 分析微信通讯协议并重新实现一个第三方客户端&lt;/h5&gt;
+
+&lt;p&gt;微信通讯有长连接短连接两种形式，分别用于消息收发和一些控制消息。&lt;/p&gt;
+
+&lt;p&gt;其中长连接协议是一个&lt;a href=&quot;https://mp.weixin.qq.com/s?__biz=MzAwNDY1ODY2OQ==&amp;amp;mid=2649286266&amp;amp;idx=1&amp;amp;sn=f5d049033e251cccc22e163532355ddf&quot;&gt;TLS1.3&lt;/a&gt;变种。&lt;/p&gt;
+
+&lt;p&gt;这种方式难度最大，用于实现微信机器人这样的功能太浪费。&lt;/p&gt;
+</description>
+      </item>
     
       <item>
         <title>模拟浏览器设置</title>
@@ -296,36 +389,6 @@
 &lt;h5 id=&quot;action&quot;&gt;Action&lt;/h5&gt;
 
 &lt;p&gt;&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-5/action.png&quot; alt=&quot;feed&quot; /&gt;&lt;/p&gt;
-</description>
-      </item>
-    
-      <item>
-        <title>例7:微信公众号自动发文</title>
-        <link>xun.im/2017/04/23/example-auto-weixin-mp/</link>
-        <pubDate>Sun, 23 Apr 2017 00:00:00 +0800</pubDate>
-        <author>wuhx</author>
-        <description>&lt;p&gt;原理：&lt;br /&gt;
-登录微信公众号后台发文章时，必须由授权用户用微信扫描才能登录。 本例将用&lt;a href=&quot;/2017/04/23/imhuman/&quot;&gt;imhuman服务&lt;/a&gt;服务远程实现这一步。&lt;/p&gt;
-
-&lt;p&gt;注意：&lt;br /&gt;
-本例执行成功后，可手动登录公众号后台，到&lt;code class=&quot;highlighter-rouge&quot;&gt;素材管理&lt;/code&gt;查看新建的文章。没有实现自动群发。&lt;/p&gt;
-
-&lt;h5 id=&quot;section&quot;&gt;步骤&lt;/h5&gt;
-
-&lt;h5 id=&quot;feed&quot;&gt;Feed&lt;/h5&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-6/feed.png&quot; alt=&quot;feed&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;Spec&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-6/spec.png&quot; alt=&quot;feed&quot; /&gt;&lt;/p&gt;
-
-&lt;h5 id=&quot;action&quot;&gt;Action&lt;/h5&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-7/action.png&quot; alt=&quot;feed&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;创建成功后可在详情里，点击闪电按钮手动触发，测试效果。如果执行失败可以查看失败时的浏览器截图。&lt;br /&gt;
-&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-7/trigger.png&quot; alt=&quot;feed&quot; /&gt;&lt;/p&gt;
 </description>
       </item>
     

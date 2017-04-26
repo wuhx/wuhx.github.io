@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!-- meta information -->
+<meta charset="utf-8">
+<meta name="description" 
+      content="本文简单从原因，技术原理，稳定性三个角度总结一下微信机器人技术。如有遗漏，欢迎补充。##### 定义本文的微信机器人是指：用程序手段驱动个人微信号实现自动发送微信消息，邀请好友，发朋友圈等功能。##### 原因使用微信机器人的原因：1..." >
+<meta name="author" content="wuhx">
+
+<!-- Enable responsiveness on mobile devices-->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+<!-- title -->
+<title>微信机器人技术总结 &middot; Not my idea</title>
+
+<!-- icons -->
+<link rel="shortcut icon" href="/public/images/favicon.ico" />
+
+<!-- stylesheets -->
+<link rel="stylesheet" href="/public/css/responsive.gs.12col.css">
+<link rel="stylesheet" href="/public/css/animate.min.css">
+<link rel="stylesheet" href="/public/css/main.css">
+
+<!-- Google fonts -->
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,400italic&subset=latin-ext">
+
+
+
+<!-- feed links -->
+<link rel="alternate" href="xun.im/feed.xml" type="application/rss+xml" title="">
+
+  </head>
+  <body>
+    <div class="container azul">
+      <header class="top row gutters">
+        <div class="col span_2 center">
+          <!-- TODO: add baseurl to the logo link -->
+          <a href="xun.im" id="logo" title="Not my idea"
+             style="background-image: url(/public/images/logo.png);"></a>
+        </div>
+        <nav class="col span_10 top-navbar">
+  
+  <a href="/" title="Home"
+     >Home</a>
+  
+  <a href="/about" title="About"
+     >About</a>
+  
+</nav>
+
+      </header>
+
+      <article class="single row gutters">
+  <time class="published" datetime="2017-04-26">26 April 2017</time>
+  <h2>微信机器人技术总结</h2>
+
+  <p>本文简单从原因，技术原理，稳定性三个角度总结一下微信机器人技术。如有遗漏，欢迎补充。</p>
+
+<h5 id="section">定义</h5>
+
+<p>本文的微信机器人是指：用程序手段驱动个人微信号实现自动发送微信消息，邀请好友，发朋友圈等功能。</p>
+
+<h5 id="section-1">原因</h5>
+
+<p>使用微信机器人的原因：</p>
+
+<ol>
+  <li>微信开放接口限制多，功能少。</li>
+  <li>省钱（微信开发者要缴年费）</li>
+  <li>要做一些腾讯协议不允许的事（黑产）</li>
+</ol>
+
+<h4 id="section-2">技术原理</h4>
+
+<p>微信机器人技术大概有这几类：</p>
+
+<ol>
+  <li>用Selenium等技术驱动浏览器登录Web微信，并执行自动操作。</li>
+  <li>用各种编程语言实现Web微信协议</li>
+  <li>逆向微信客户端代码增加功能重新打包。</li>
+  <li>使用Xposed等框架在手机系统层面修改微信客户端行为，实现特定功能。</li>
+  <li>分析微信通讯协议并重新实现一个第三方客户端。</li>
+</ol>
+
+<h5 id="seleniumweb">1. Selenium驱动浏览器登录Web微信</h5>
+
+<p>Selenium驱动浏览器的原理，使这种方式相当于微信官方实现的机器人。</p>
+
+<p>特点：</p>
+
+<ol>
+  <li>需要手机扫码协助登录</li>
+  <li>实现简单，无技术门槛。</li>
+  <li>只能回复消息，拉群，爬公众号，不能发朋友圈。</li>
+  <li>不稳定，个人测试最长一个月会掉线一次。</li>
+</ol>
+
+<h5 id="web">2. 编程语言实现Web微信协议</h5>
+
+<p>特点：</p>
+
+<ol>
+  <li>需要手机扫码协助登录。</li>
+  <li>实现简单，Web微信为明文协议，分析比较容易，而且网上有开源实现。</li>
+  <li>只能回复微信消息，拉群，爬公众号，不能发朋友圈。</li>
+  <li>比Selenium方式更不稳定。<br />
+测试了JAVA版本，登录几个小时后就掉线了。当然测试时间比较久了，可能软件有更新，也不能代表其他语言版本的稳定性。</li>
+</ol>
+
+<h5 id="section-3">3. 逆向微信客户端代码增加功能重新打包</h5>
+
+<p>特点：</p>
+
+<ol>
+  <li>无需手机扫码登录。</li>
+  <li>实现难度相对较高，需要逆向知识。</li>
+  <li>属于恶意使用，有被腾讯封号的风险。</li>
+  <li>能实现回复微信消息，发朋友圈等各种功能。</li>
+</ol>
+
+<h5 id="xposed">4. Xposed</h5>
+
+<p>Xposed的原理是在不修改App代码的情况下，Hook各种系统函数或内部函数调用实现修改App功能。<br />
+因此这种方式除了是否属于腾讯定义的恶意使用，其他和逆向重新打包方式类似。</p>
+
+<p>特点：</p>
+
+<ol>
+  <li>无需手机扫码登录。</li>
+  <li>实现难度相对较高，需要逆向知识。</li>
+  <li>可能会被腾讯认为恶意使用，有被封号的危险。</li>
+  <li>能实现回复微信消息，发朋友圈等各种功能。</li>
+</ol>
+
+<h5 id="section-4">5. 分析微信通讯协议并重新实现一个第三方客户端</h5>
+
+<p>微信通讯有长连接短连接两种形式，分别用于消息收发和一些控制消息。</p>
+
+<p>其中长连接协议是一个<a href="https://mp.weixin.qq.com/s?__biz=MzAwNDY1ODY2OQ==&amp;mid=2649286266&amp;idx=1&amp;sn=f5d049033e251cccc22e163532355ddf">TLS1.3</a>变种。</p>
+
+<p>这种方式难度最大，用于实现微信机器人这样的功能太浪费。</p>
+
+	
+	<!-- duoshuo box -->
+	<div class="ds-thread" data-thread-key="/2017/04/26/weixin-robots-tecnicical-review" data-title="微信机器人技术总结" data-url="xun.im/2017/04/26/weixin-robots-tecnicical-review/"></div>
+	<!-- duoshuo box end -->
+	
+</article>
+
+
+      <footer>
+        <p>
+          This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-nd/2.5/deed.zh">署名-非商业性使用-禁止演绎 </a>License.
+        </p>
+      </footer>
+    </div>
+
+    <!-- scripts -->
+		<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+		
+	<link rel="stylesheet" href="/public/css/tomorrow.css">
+	<script src="/public/js/highlight.pack.js"></script>
+	<script>hljs.initHighlightingOnLoad();</script>
+	
+    <script src="/public/js/jquery.min.js"></script>
+    <script src="/public/js/jquery.fitvids.js"></script>
+    <script>
+      $(document).ready(function(){
+        $("article").fitVids();
+      });
+    </script>
+		
+		<!-- google analystics for xun.im -->
+		<script>
+		  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+		  ga('create', 'UA-31449466-1', 'auto');
+		  ga('send', 'pageview');
+		</script>
+		<!-- baidu site for xun.im -->
+		<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "//hm.baidu.com/hm.js?b62786d99652b034add78b003086816f";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+		</script>
+		<!-- duoshuo common -->
+		<script type="text/javascript">
+		var duoshuoQuery = {short_name:"5site"};
+			(function() {
+				var ds = document.createElement('script');
+				ds.type = 'text/javascript';ds.async = true;
+				ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+				ds.charset = 'UTF-8';
+				(document.getElementsByTagName('head')[0] 
+				 || document.getElementsByTagName('body')[0]).appendChild(ds);
+			})();
+			</script>
+		<!-- duoshuo end -->
+		
+		
+  </body>
+</html>
