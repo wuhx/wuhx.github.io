@@ -6,8 +6,8 @@
     <atom:link href="http://xun.im/feed.xml" rel="self" type="application/rss+xml" />
     <description>personal blog, scala, akka,</description>
     <language>en-us</language>
-    <pubDate>Thu, 27 Apr 2017 20:29:11 +0800</pubDate>
-    <lastBuildDate>Thu, 27 Apr 2017 20:29:11 +0800</lastBuildDate>
+    <pubDate>Fri, 28 Apr 2017 11:35:02 +0800</pubDate>
+    <lastBuildDate>Fri, 28 Apr 2017 11:35:02 +0800</lastBuildDate>
 
     
       <item>
@@ -172,19 +172,19 @@
   &lt;li&gt;微信公众号登录验证：收到imhuman验证通知消息后长按图片识别登录。&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;p&gt;&lt;a href=&quot;https://defyun.oss-cn-shanghai.aliyuncs.com/imhuman.html#c435c895-2250-4918-92bb-4641665a5fb6&quot;&gt;https://defyun.oss-cn-shanghai.aliyuncs.com/imhuman.html#c435c895-2250-4918-92bb-4641665a5fb6&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://cloudmonad.com/imhuman.html#c435c895-2250-4918-92bb-4641665a5fb6&quot;&gt;https://cloudmonad.com/imhuman.html#c435c895-2250-4918-92bb-4641665a5fb6&lt;/a&gt;&lt;/p&gt;
 
 &lt;ol&gt;
   &lt;li&gt;极验证：拖动图片让拼图重合（只能在PC端操作）&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;p&gt;&lt;a href=&quot;https://defyun.oss-cn-shanghai.aliyuncs.com/imhuman.html#7b2a1485-b5f4-433e-ab30-e58e0966979f&quot;&gt;https://defyun.oss-cn-shanghai.aliyuncs.com/imhuman.html#7b2a1485-b5f4-433e-ab30-e58e0966979f&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://cloudmonad.com/imhuman.html#7b2a1485-b5f4-433e-ab30-e58e0966979f&quot;&gt;https://cloudmonad.com/imhuman.html#7b2a1485-b5f4-433e-ab30-e58e0966979f&lt;/a&gt;&lt;/p&gt;
 
 &lt;ol&gt;
   &lt;li&gt;12306识图：点击正确图片。&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;p&gt;&lt;a href=&quot;https://defyun.oss-cn-shanghai.aliyuncs.com/imhuman.html#b6a050e1-5ce3-4321-9ff4-3f85c5842bc2&quot;&gt;https://defyun.oss-cn-shanghai.aliyuncs.com/imhuman.html#b6a050e1-5ce3-4321-9ff4-3f85c5842bc2&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://cloudmonad.com/imhuman.html#b6a050e1-5ce3-4321-9ff4-3f85c5842bc2&quot;&gt;https://cloudmonad.com/imhuman.html#b6a050e1-5ce3-4321-9ff4-3f85c5842bc2&lt;/a&gt;&lt;/p&gt;
 </description>
       </item>
     
@@ -219,7 +219,7 @@
 
 &lt;h5 id=&quot;section&quot;&gt;推送方式1: 链接分享&lt;/h5&gt;
 
-&lt;p&gt;登录后点击&lt;a href=&quot;https://defyun.oss-cn-shanghai.aliyuncs.com/#create&quot;&gt;新建&lt;/a&gt;，在第一步设置输入Feed时选择微信Feed&lt;/p&gt;
+&lt;p&gt;登录后点击&lt;a href=&quot;https://cloudmonad.com/#create&quot;&gt;新建&lt;/a&gt;，在第一步设置输入Feed时选择微信Feed&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-1/feed.png&quot; alt=&quot;feed&quot; /&gt;&lt;/p&gt;
 
