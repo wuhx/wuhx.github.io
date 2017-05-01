@@ -6,8 +6,8 @@
     <atom:link href="http://xun.im/feed.xml" rel="self" type="application/rss+xml" />
     <description>personal blog, scala, akka,</description>
     <language>en-us</language>
-    <pubDate>Tue, 02 May 2017 07:15:56 +0800</pubDate>
-    <lastBuildDate>Tue, 02 May 2017 07:15:56 +0800</lastBuildDate>
+    <pubDate>Tue, 02 May 2017 07:26:04 +0800</pubDate>
+    <lastBuildDate>Tue, 02 May 2017 07:26:04 +0800</lastBuildDate>
 
     
       <item>
@@ -32,7 +32,11 @@
     &lt;p&gt;增加了 &lt;a href=&quot;/2017/04/30/example-taobao-price-monitor/&quot;&gt;例9:针对淘宝商品特定套餐的价格变化监控&lt;/a&gt;&lt;/p&gt;
   &lt;/li&gt;
   &lt;li&gt;
-    &lt;p&gt;启用新域名 &lt;a href=&quot;https://cloudmonad.com&quot;&gt;https://cloudmonad.com&lt;/a&gt;&lt;/p&gt;
+    &lt;p&gt;启用新域名 &lt;a href=&quot;https://cloudmonad.com&quot;&gt;https://cloudmonad.com&lt;/a&gt;&lt;br /&gt;
+&lt;a href=&quot;https://defyun.oss-cn-shanghai.aliyuncs.com&quot;&gt;备用链接&lt;/a&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;完善说明文档&lt;a href=&quot;/2017/04/23/cloudmonad/&quot;&gt;CloudMonad:组装你的私人互联网&lt;/a&gt;&lt;/p&gt;
   &lt;/li&gt;
 &lt;/ol&gt;
 </description>
