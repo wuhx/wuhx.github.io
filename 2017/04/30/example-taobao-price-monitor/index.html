@@ -4,14 +4,14 @@
     <!-- meta information -->
 <meta charset="utf-8">
 <meta name="description" 
-      content="如何试用CloudMonad1. 注册帐号   访问[https://cloudmonad.com](https://cloudmonad.com)   [备用链接](https://defyun.oss-cn-shanghai.al..." >
+      content="淘宝商品的具体价格需要在选定套餐后才能确定，否则是一个范围值。![feed](http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-9/taobao.png)![feed](h..." >
 <meta name="author" content="wuhx">
 
 <!-- Enable responsiveness on mobile devices-->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 
 <!-- title -->
-<title>如何试用CloudMonad &middot; Not my idea</title>
+<title>例9:针对淘宝商品特定套餐的价格变化监控 &middot; Not my idea</title>
 
 <!-- icons -->
 <link rel="shortcut icon" href="/public/images/favicon.ico" />
@@ -51,44 +51,38 @@
       </header>
 
       <article class="single row gutters">
-  <time class="published" datetime="2017-04-23">23 April 2017</time>
-  <h2>如何试用CloudMonad</h2>
+  <time class="published" datetime="2017-04-30">30 April 2017</time>
+  <h2>例9:针对淘宝商品特定套餐的价格变化监控</h2>
 
-  <p>如何试用CloudMonad</p>
+  <p>淘宝商品的具体价格需要在选定套餐后才能确定，否则是一个范围值。<br />
+<img src="http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-9/taobao.png" alt="feed" /><br />
+<img src="http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-9/taobao2.png" alt="feed" /></p>
 
-<ol>
-  <li>
-    <p>注册帐号</p>
+<p>利用CloudMonad的可定制性，我们可以实现针对特定套餐的价格监控</p>
 
-    <p>访问<a href="https://cloudmonad.com">https://cloudmonad.com</a><br />
-<a href="https://defyun.oss-cn-shanghai.aliyuncs.com">备用链接</a></p>
+<h5 id="section">详细步骤</h5>
 
-    <p>只支持手机号或邮箱注册。</p>
-  </li>
-  <li>
-    <p>绑定帐号<br />
-注册登录后，访问<a href="https://cloudmonad.com/#userinfo">https://cloudmonad.com/#userinfo</a></p>
-  </li>
-</ol>
+<h5 id="feed">Feed</h5>
 
-<p>注意事项：</p>
+<p><img src="http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-9/feed1.png" alt="feed" /><br />
+<img src="http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-9/feed2.png" alt="feed" /></p>
 
-<ol>
-  <li>
-    <p>注册后需要激活才能登录。</p>
-  </li>
-  <li>
-    <p>微信绑定的步骤，添加绑定页面显示的微信机器人为好友，并发送「绑定 + 你刚注册的帐号」给它。如你用echo@gmail.com注册了CloudMonad，则需要发送消息「绑定 echo@gmail.com」，每个帐号只能绑定一次微信号。</p>
-  </li>
-</ol>
+<h5 id="cron">Cron配置：每天零点执行</h5>
 
-<p><img src="http://defyun.oss-cn-shanghai.aliyuncs.com/blog/misc/weixinbind.png" alt="设置图标" /></p>
+<p><img src="http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-4/cron.png" alt="feed" /></p>
 
-<p><img src="http://defyun.oss-cn-shanghai.aliyuncs.com/blog/misc/userinfo.png" alt="userinfo" /></p>
+<h5 id="spec">Spec</h5>
+<p><img src="http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-9/spec.png" alt="feed" /></p>
+
+<h5 id="action">Action</h5>
+<p><img src="http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-9/action.png" alt="feed" /></p>
+
+<h5 id="section-1">执行成功时的日志</h5>
+<p><img src="http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-9/log.png" alt="feed" /></p>
 
 
 	<!-- duoshuo box -->
-	<div class="ds-thread" data-thread-key="/2017/04/23/account-setting" data-title="如何试用CloudMonad" data-url="xun.im/2017/04/23/account-setting/"></div>
+	<div class="ds-thread" data-thread-key="/2017/04/30/example-taobao-price-monitor" data-title="例9:针对淘宝商品特定套餐的价格变化监控" data-url="xun.im/2017/04/30/example-taobao-price-monitor/"></div>
 	<!-- duoshuo box end -->
 
 </article>

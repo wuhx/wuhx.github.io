@@ -4,14 +4,14 @@
     <!-- meta information -->
 <meta charset="utf-8">
 <meta name="description" 
-      content="花了几个月时间全栈用Scala做了一个网站，暂时定名为CloudMonad，意为云端执行单元。TLDR;CloudMonad可以这样玩：1. 发一条微信消息，推送到你的Kindle或者一个私有的Rss源。2. 定时获取京东商品的价格和..." >
+      content="[CloudMonad](https://cloudmonad.com)是一个无需编程，让用户像拼接乐高积木一样，通过Web界面组合各种预定义配件实现特定功能的云服务。##### CloudMonad主要有3个模块：Feed，Spec..." >
 <meta name="author" content="wuhx">
 
 <!-- Enable responsiveness on mobile devices-->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 
 <!-- title -->
-<title>CloudMonad &middot; Not my idea</title>
+<title>CloudMonad:组装你的私人互联网 &middot; Not my idea</title>
 
 <!-- icons -->
 <link rel="shortcut icon" href="/public/images/favicon.ico" />
@@ -52,21 +52,9 @@
 
       <article class="single row gutters">
   <time class="published" datetime="2017-04-23">23 April 2017</time>
-  <h2>CloudMonad</h2>
+  <h2>CloudMonad:组装你的私人互联网</h2>
 
-  <p>花了几个月时间全栈用Scala做了一个网站，暂时定名为CloudMonad，意为云端执行单元。</p>
-
-<p>TLDR;<br />
-CloudMonad可以这样玩：</p>
-
-<ol>
-  <li>发一条微信消息，推送到你的Kindle或者一个私有的Rss源。</li>
-  <li>定时获取京东商品的价格和优惠信息，在满足指定条件后发送一条微信通知消息。</li>
-  <li>定时访问12306网站查询或购买车票。</li>
-  <li>定时登录微信公众号后台发文。</li>
-</ol>
-
-<p>这些功能只是CloudMonad的应用示例，都是在一个前端SPA应用页面用Json配置生成，新增功能对后端完全透明。</p>
+  <p><a href="https://cloudmonad.com">CloudMonad</a>是一个无需编程，让用户像拼接乐高积木一样，通过Web界面组合各种预定义配件实现特定功能的云服务。</p>
 
 <h5 id="cloudmonad3feedspecaction">CloudMonad主要有3个模块：Feed，Spec和Action。</h5>
 
@@ -91,42 +79,73 @@ CloudMonad可以这样玩：</p>
 <a href="/2017/04/23/example-fetch-url/">例5:使用FetchUrl实现将任意网站作为输入源</a><br />
 <a href="/2017/04/23/example-12306/">例6:12306车票购买</a><br />
 <a href="/2017/04/23/example-auto-weixin-mp/">例7:微信公众号自动发文</a><br />
-<a href="/2017/04/23/example-rest-api/">例8:利用RestApi Action实现方糖微信通知</a></p>
+<a href="/2017/04/23/example-rest-api/">例8:利用RestApi Action实现方糖微信通知</a><br />
+<a href="/2017/04/30/example-taobao-price-monitor/">例9:针对淘宝商品特定套餐的价格变化监控</a></p>
+
+<p>这些功能只是CloudMonad的应用示例，它们都是通过一个Serverless的<a href="https://cloudmonad.com">Web应用页面</a>用Json配置生成，新增功能对后端完全透明。</p>
 
 <h5 id="ifttt">和IFTTT的区别？</h5>
 
-<p><a href="https://ifttt.com/">IFTTT</a>的成功依赖于国外开放的API环境，通过和Facebook，Twitter，Gmail等帐号绑定即可获得授权实现大量功能。而国内各厂商相对更封闭一点，通过API授权能获取的功能很少，有些甚至根本不提供，这也是IFTTT的国内山寨版没有成形的重要原因。</p>
+<p><a href="https://ifttt.com/">IFTTT</a> 是“IF This Then That”的缩写。其目标是利用各种开放的API，将技术复杂性隐藏起来，使每个人都可以成为互联网无需编程的程序员，让整个互联网都可以为我所用。<a href="http://36kr.com/p/5058264.html">来源</a></p>
 
-<p>同时即使在国外，第三方授权方式在功能会相对受限，适用场景比较窄，这很容易理解，没有一家公司会希望用户只需通过第三方服务访问自己。</p>
+<p>它的成功依赖于国外开放的API环境，通过和Facebook，Twitter，Gmail等帐号绑定即可获得授权实现大量功能。而国内各厂商相对更封闭一点，通过API授权能获取的功能很少，有些甚至根本不提供，这也是IFTTT的国内山寨版没有成形的重要原因。</p>
+
+<p>同时，即使在国外，第三方授权方式在功能上也会相对受限，适用场景比较窄，这很容易理解，没有一家公司会希望用户只需通过第三方服务访问自己。</p>
 
 <p>CloudMonad走的是另外一条途径：通过自动化的浏览器模拟用户行为实现功能，理论上只要用户通过浏览器能完成的功能，CloudMonad的都能提供。</p>
 
 <h5 id="httpzaoshuio-importhttpswwwimportio">和<a href="http://zaoshu.io/">造数</a>以及 <a href="https://www.import.io/">import</a>的区别</h5>
 
-<p>相同的地方是都用了爬虫技术，造数和importy更接近于传统意义上的爬虫，主要目的是批量获取数据。而CloudMonad更像是一个自动化的浏览器，注重的是浏览过程产生的结果，这个结果可能是搜集到一些数据，也有可能只是浏览过程中产生的一些side effect（如购买了某件商品，发送了一条评论）。</p>
+<p>相同的地方是都用了爬虫技术，造数和import更接近于传统意义上的爬虫，主要目的是批量获取数据。而CloudMonad更像是一个自动化的浏览器，注重的是浏览过程产生的结果，这个结果可能是搜集到一些数据，也有可能只是浏览过程中产生的一些side effect（如购买了某件商品，发送了一条评论）。</p>
 
-<p>换句话说，造数和importy满足的是爬取大量数据然后离线分析的需求，CloudMonad只想满足一个偷懒的用户。</p>
+<p>换句话说，造数和import满足的是爬取大量数据然后离线分析的需求，CloudMonad只想满足一个偷懒的用户。</p>
 
 <h5 id="cloudmonad">CloudMonad如何应对网站的反爬虫措施</h5>
 
 <p>CloudMonad不是爬虫，因而可以用更灵活的方式来处理一些普通爬虫无法处理的验证措施。<br />
 我专门为它做了一个名为<a href="/2017/04/23/imhuman/">imhuman</a>的验证码处理模块，可完美处理12306和微信扫码验证。</p>
 
-<h5 id="section">如何试用</h5>
+<h5 id="section">技术栈和使用到的资源</h5>
+<p>CloudMonad的前端,后端以及一个Android模块（微信）都是用Scala语言写的。<br />
+全栈Scala的最大好处除了复用代码，便于维护，还杜绝了前后端通信时数据结构不一致导致的错误。</p>
+
+<p>CloudMonad在设计之初有一个小目标：要在尽可能低的系统资源下支持高扩展性(Scalable)，而爬虫特别是 Headless 浏览器是高资源消耗操作，如何在系统低载时尽可能少的消耗资源，又能应付突发大流量请求是一个难题，最后的解决方案是各种按需付费的云服务。</p>
+
+<p>CloudMonad 用了多种云资源：<br />
+包括一个整合了阿里云<a href="https://www.aliyun.com/product/mns">MNS</a>和亚马逊<a href="https://aws.amazon.com/sqs/">SQS</a>双备份的 CloudQueue 用于任务分发。<br />
+<a href="https://leancloud.cn">LeanCloud</a>数据库配合阿里云<a href="https://www.aliyun.com/product/oss">OSS</a>用于前后端通信。<br />
+IBM 的<a href="https://developer.ibm.com/openwhisk/">openwhisk</a> ，亚马逊的<a href="https://aws.amazon.com/lambda/">Lambda</a>， <a href="https://aws.amazon.com/lambda/">DigitalOcean</a> 按需使用的虚拟主机用于动态调整资源。<br />
+目前整个 CloudMonad 系统的硬性支出只有一台阿里云最低配虚拟主机，其他资源都是按需使用的，那台阿里云虚拟机上运行着一个<a href="http://akka.io/">Akka</a> node用于协调资源，用户管理等工作，具体的脏活都外包给其他云服务执行。</p>
+
+<h5 id="section-1">如何使用</h5>
 
 <p><a href="/2017/04/23/account-setting/">注册和绑定</a></p>
 
-<h5 id="section-1">附：</h5>
+<p>CloudMonad每次执行会消耗一定的CloudPoint，具体数量根据执行时间确定，如Feed花了12秒爬取搜狗微信公众号文章，Action花了9秒推送到Kindle，那么此次运行会扣除你21个CP。</p>
 
-<p><a href="/2017/04/23/setting-cron/">Cron配置</a>: 用于生成Cron定时器的UI</p>
+<p>每个用户初始会分配500个CloudPoint，用完后该用户所有的任务都会暂停。如果你碰到这个情况，请<a href="&#109;&#097;&#105;&#108;&#116;&#111;:&#105;&#064;&#120;&#117;&#110;&#046;&#105;&#109;">通知我</a>,在后台手动给你增加。</p>
 
-<p><a href="/2017/04/23/setting-zhizhu/">爬虫配置</a>: 用于个性化爬虫</p>
+<p>你可以在[<strong>我的账户</strong>]查看你的CloudPoint，同时每个用户有一个唯一的推荐链接，如果你觉得这个服务对你有用的话欢迎用这个链接推荐给你的好友，后台会有记录。</p>
+
+<h5 id="section-2">如何调试</h5>
+<p>CloudMonad会尽可能详细的记录每一次运行的细节。如Feed的执行结果，Spec的判定过程和结果，Action的输入和输出。<br />
+如果是爬虫执行类异常，还会提供一个异常发生时的浏览器截图。<br />
+<img src="http://defyun.oss-cn-shanghai.aliyuncs.com/blog/misc/debug.png" alt="feed" /></p>
+
+<h5 id="section-3">附：</h5>
+
+<p><a href="/2017/04/23/setting-cron/">Cron配置</a>: 用于生成Cron定时器的UI<br />
+<a href="/2017/04/23/setting-zhizhu/">爬虫配置</a>: 用于个性化爬虫</p>
+
+<h5 id="section-4">延伸阅读</h5>
+<p><a href="http://www.leiphone.com/news/201612/0YyfS1OekSVimfaL.html">万物互联：IFTTT的梦想、崛起和挣扎</a><br />
+<a href="http://36kr.com/p/5058264.html">物联网公司 IFTTT 商业模式转型之路</a></p>
 
 <p>关于CloudMonad的问题和建议可<a href="https://github.com/wuhx/neveread.com/issues">在此</a>提issue</p>
 
 
 	<!-- duoshuo box -->
-	<div class="ds-thread" data-thread-key="/2017/04/23/cloudmonad" data-title="CloudMonad" data-url="xun.im/2017/04/23/cloudmonad/"></div>
+	<div class="ds-thread" data-thread-key="/2017/04/23/cloudmonad" data-title="CloudMonad:组装你的私人互联网" data-url="xun.im/2017/04/23/cloudmonad/"></div>
 	<!-- duoshuo box end -->
 
 </article>
