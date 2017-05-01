@@ -6,8 +6,8 @@
     <atom:link href="http://xun.im/feed.xml" rel="self" type="application/rss+xml" />
     <description>personal blog, scala, akka,</description>
     <language>en-us</language>
-    <pubDate>Tue, 02 May 2017 07:26:04 +0800</pubDate>
-    <lastBuildDate>Tue, 02 May 2017 07:26:04 +0800</lastBuildDate>
+    <pubDate>Tue, 02 May 2017 07:54:19 +0800</pubDate>
+    <lastBuildDate>Tue, 02 May 2017 07:54:19 +0800</lastBuildDate>
 
     
       <item>
@@ -34,6 +34,9 @@
   &lt;li&gt;
     &lt;p&gt;启用新域名 &lt;a href=&quot;https://cloudmonad.com&quot;&gt;https://cloudmonad.com&lt;/a&gt;&lt;br /&gt;
 &lt;a href=&quot;https://defyun.oss-cn-shanghai.aliyuncs.com&quot;&gt;备用链接&lt;/a&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;为每位用户增加了推荐链接，暂时没推荐奖励，但后台会有记录，如果这个项目集齐足够多用户继续开发下去，会根据注册时间和推荐人数相应在权限和CloudPoint上做奖励。&lt;/p&gt;
   &lt;/li&gt;
   &lt;li&gt;
     &lt;p&gt;完善说明文档&lt;a href=&quot;/2017/04/23/cloudmonad/&quot;&gt;CloudMonad:组装你的私人互联网&lt;/a&gt;&lt;/p&gt;
