@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Not my idea</title>
+    <title>wuhx</title>
     <link>http://xun.im</link>
     <atom:link href="http://xun.im/feed.xml" rel="self" type="application/rss+xml" />
     <description>personal blog, scala, akka,</description>
     <language>en-us</language>
-    <pubDate>Tue, 02 May 2017 07:54:41 +0800</pubDate>
-    <lastBuildDate>Tue, 02 May 2017 07:54:41 +0800</lastBuildDate>
+    <pubDate>Tue, 02 May 2017 14:57:02 +0800</pubDate>
+    <lastBuildDate>Tue, 02 May 2017 14:57:02 +0800</lastBuildDate>
 
     
       <item>
