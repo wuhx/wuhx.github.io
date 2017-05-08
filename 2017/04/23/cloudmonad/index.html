@@ -4,15 +4,15 @@
     <!-- meta information -->
 <meta charset="utf-8">
 <meta name="description" 
-      content="[CloudMonad](https://cloudmonad.com)是一个无需编程，让用户像拼接乐高积木一样，通过Web界面组合各种预定义配件实现特定功能的云服务。##### CloudMonad主要有3个模块：Feed，Spec..." >
+      content="[CloudMonad](https://cloudmonad.com)是一个无需编程，让用户通过Web界面组合各种预定义配件实现特定功能的云服务。##### CloudMonad主要有3个模块：Feed，Spec和Action。1...." >
 <meta name="author" content="wuhx">
 
 <!-- Enable responsiveness on mobile devices-->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 
 <!-- title -->
-<!-- <title>  CloudMonad:组装你的私人互联网  </title> -->
-<title>  CloudMonad:组装你的私人互联网 </title>
+<!-- <title>  CloudMonad:可编程的互联网  </title> -->
+<title>  CloudMonad:可编程的互联网 </title>
 
 <!-- icons -->
 <link rel="shortcut icon" href="/public/images/favicon.ico" />
@@ -53,9 +53,9 @@
 
       <article class="single row gutters">
   <time class="published" datetime="2017-04-23">23 April 2017</time>
-  <h2>CloudMonad:组装你的私人互联网</h2>
+  <h2>CloudMonad:可编程的互联网</h2>
 
-  <p><a href="https://cloudmonad.com">CloudMonad</a>是一个无需编程，让用户像拼接乐高积木一样，通过Web界面组合各种预定义配件实现特定功能的云服务。</p>
+  <p><a href="https://cloudmonad.com">CloudMonad</a>是一个无需编程，让用户通过Web界面组合各种预定义配件实现特定功能的云服务。</p>
 
 <h5 id="cloudmonad3feedspecaction">CloudMonad主要有3个模块：Feed，Spec和Action。</h5>
 
@@ -129,9 +129,23 @@ IBM 的<a href="https://developer.ibm.com/openwhisk/">openwhisk</a> ，亚马逊
 <p>你可以在[<strong>我的账户</strong>]查看你的CloudPoint，同时每个用户有一个唯一的推荐链接，如果你觉得这个服务对你有用的话欢迎用这个链接推荐给你的好友，后台会有记录。</p>
 
 <h5 id="section-2">如何调试</h5>
-<p>CloudMonad会尽可能详细的记录每一次运行的细节。如Feed的执行结果，Spec的判定过程和结果，Action的输入和输出。<br />
-如果是爬虫执行类异常，还会提供一个异常发生时的浏览器截图。<br />
-<img src="http://defyun.oss-cn-shanghai.aliyuncs.com/blog/misc/debug.png" alt="feed" /></p>
+<p>CloudMonad创建成功后，点击「详情」按钮，可查看CloudMonad的运行细节：如Feed的执行结果，Spec的判定过程和结果，Action的输入和输出。</p>
+
+<p>CloudMonad运行中如果碰到不能恢复的异常，会自动禁用，并记录异常内容，如果是爬虫执行类异常，还会提供一个异常发生时的浏览器截图。</p>
+
+<p><strong>为什么我的CloudMonad没有运行？</strong><br />
+CloudMonad遇到下面这些情况会停止运行:<br />
+1. 用户的CloudPoint不足（可在「用户信息」中查看）。<br />
+2. 运行过程中代码抛异常了。<br />
+3. 运行次数超出创建时指定的「最多执行次数」。默认为5次，最大可设置为100.</p>
+
+<p>从目前的测试情况看，最有可能的问题是用户没有正确设置Cron定时器，导致任务短时间内多次运行，快速消耗了运行次数配额和CloudPoint。</p>
+
+<p>另外还有一些参数设置不正确，导致Feed输出的数据没能传递给Action，请根据运行日志做相应调整。</p>
+
+<p><img src="http://defyun.oss-cn-shanghai.aliyuncs.com/blog/misc/debug.png" alt="feed" /></p>
+
+<p>如果你创建的CloudMonad未能按预期运行，请点击「详情」页面将它任务ID反馈给我。</p>
 
 <h5 id="section-3">额外配置选项：</h5>
 
@@ -147,7 +161,7 @@ IBM 的<a href="https://developer.ibm.com/openwhisk/">openwhisk</a> ，亚马逊
 
 
 	<!-- duoshuo box -->
-	<div class="ds-thread" data-thread-key="/2017/04/23/cloudmonad" data-title="CloudMonad:组装你的私人互联网" data-url="xun.im/2017/04/23/cloudmonad/"></div>
+	<div class="ds-thread" data-thread-key="/2017/04/23/cloudmonad" data-title="CloudMonad:可编程的互联网" data-url="xun.im/2017/04/23/cloudmonad/"></div>
 	<!-- duoshuo box end -->
 
 </article>
