@@ -6,9 +6,74 @@
     <atom:link href="http://xun.im/feed.xml" rel="self" type="application/rss+xml" />
     <description>personal blog, scala, akka,</description>
     <language>en-us</language>
-    <pubDate>Tue, 09 May 2017 14:03:09 +0800</pubDate>
-    <lastBuildDate>Tue, 09 May 2017 14:03:09 +0800</lastBuildDate>
+    <pubDate>Fri, 12 May 2017 21:05:40 +0800</pubDate>
+    <lastBuildDate>Fri, 12 May 2017 21:05:40 +0800</lastBuildDate>
 
+    
+      <item>
+        <title>利用CloudMonad从微信发送消息到钉钉</title>
+        <link>http://xun.im/2017/05/12/weixin-to-dingding/</link>
+        <pubDate>Fri, 12 May 2017 00:00:00 +0800</pubDate>
+        <author>wuhx</author>
+        <description>&lt;p&gt;&lt;a href=&quot;https://cloudmonad.com/&quot;&gt;CloudMonad&lt;/a&gt;是一个无需编程，让用户通过Web界面组合各种预定义配件实现特定功能的云服务。详细介绍请&lt;a href=&quot;http://xun.im/2017/04/23/cloudmonad/&quot;&gt;点击&lt;/a&gt;。&lt;/p&gt;
+
+&lt;p&gt;本文介绍如何利用CloudMonad实现从微信发送消息到钉钉。&lt;/p&gt;
+
+&lt;p&gt;其基本原理是：利用CloudMonad的微信Feed，在收到用户发送的微信消息后，调用钉钉机器人的webhook接口，转发该消息。&lt;/p&gt;
+
+&lt;p&gt;关于微信Feed的详细介绍请参考：&lt;a href=&quot;http://xun.im/2017/04/23/example-weixin-to-kindle/&quot;&gt;例1:微信消息Kindle推送&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;详细步骤&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;注册并登录 &lt;a href=&quot;http://xun.im/2017/04/23/account-setting/&quot;&gt;http://xun.im/2017/04/23/account-setting/&lt;/a&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;新建一个CloudMonad&lt;/p&gt;
+
+    &lt;h5 id=&quot;feedfeed&quot;&gt;Feed：数据输入源，这里选择微信Feed。&lt;/h5&gt;
+
+    &lt;p&gt;&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-1/feed.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h5 id=&quot;specfeedcontent&quot;&gt;Spec：用于检测Feed，这里选择微信消息Content字段非空时触发。&lt;/h5&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/dingding/spec.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h5 id=&quot;actionwebhook&quot;&gt;Action：执行最终的动作，这里设置为调用钉钉机器人的webhook接口。&lt;/h5&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/dingding/action1.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/dingding/action2.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;你的钉钉机器人的webhook地址从&lt;a href=&quot;https://open-doc.dingtalk.com/docs/doc.htm?articleId=105735&amp;amp;docType=1&quot;&gt;这里&lt;/a&gt;获取。&lt;/p&gt;
+
+&lt;p&gt;POST的Json data：{“msgtype”: “text”, “text”: { “content”: “ &lt;strong&gt;{content}&lt;/strong&gt;”}}&lt;/p&gt;
+
+&lt;p&gt;其中{content}用于提取微信消息的content字段作为输入。如果你要转发微信分享的链接到钉钉这里应换成{url}，以此类推。&lt;/p&gt;
+
+&lt;h5 id=&quot;section&quot;&gt;完成&lt;/h5&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/dingding/finish.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;设置好后发一条消息给CloudMonad的微信机器人&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/dingding/info.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/dingding/detail.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;当然整个设置过程还略显复杂，主要原因是CloudMonad在设计之初并没有考虑到要支持钉钉消息发送，也没有针对性的设计UI，本例是通过一个通用的RestAction实现钉钉消息发送的。同理CloudMonad也可以支持Telegram消息推送。可参见v2ex上的&lt;a href=&quot;https://www.v2ex.com/t/356871&quot;&gt;讨论&lt;/a&gt;。&lt;/p&gt;
+
+&lt;p&gt;另外，转发微信消息到钉钉只是CloudMonad的一种组合方式，你也可以用它来监控京东或淘宝的商品价格并推送到钉钉（或微信，Telegram）上，推送Kindle，甚至&lt;a href=&quot;http://xun.im/2017/04/23/example-12306/&quot;&gt;登录12306买火车票&lt;/a&gt;。&lt;/p&gt;
+
+&lt;p&gt;关于CloudMonad的问题和建议可&lt;a href=&quot;https://github.com/wuhx/neveread.com/issues&quot;&gt;在此&lt;/a&gt;提issue&lt;br /&gt;
+或直接给我发&lt;a href=&quot;&amp;#109;&amp;#097;&amp;#105;&amp;#108;&amp;#116;&amp;#111;:&amp;#105;&amp;#064;&amp;#120;&amp;#117;&amp;#110;&amp;#046;&amp;#105;&amp;#109;&quot;&gt;邮件&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;欢迎关注知乎专栏&lt;a href=&quot;https://zhuanlan.zhihu.com/defyun&quot;&gt;一个人的云计算&lt;/a&gt;&lt;/p&gt;
+</description>
+      </item>
     
       <item>
         <title>CloudMonad更新</title>
@@ -390,23 +455,6 @@
 &lt;h5 id=&quot;action&quot;&gt;4.设置Action&lt;/h5&gt;
 
 &lt;p&gt;&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-2/action.png&quot; alt=&quot;feed&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;欢迎关注知乎专栏&lt;a href=&quot;https://zhuanlan.zhihu.com/defyun&quot;&gt;一个人的云计算&lt;/a&gt;&lt;/p&gt;
-</description>
-      </item>
-    
-      <item>
-        <title>例8:利用RestApi Action实现方糖微信通知</title>
-        <link>http://xun.im/2017/04/23/example-rest-api/</link>
-        <pubDate>Sun, 23 Apr 2017 00:00:00 +0800</pubDate>
-        <author>wuhx</author>
-        <description>&lt;p&gt;本例介绍利用RestApi Action实现方糖微信通知&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&quot;http://sc.ftqq.com/&quot;&gt;方糖&lt;/a&gt;是一个服务号实现的微信通知服务。CloudMonad除了支持利用自己的微信机器人发送微信消息外，也可通过RestApi调用方糖接口发送微信消息。&lt;/p&gt;
-
-&lt;p&gt;在RestAction设置中，将url设置为你的方糖接口地址，method选择GET即可。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://defyun.oss-cn-shanghai.aliyuncs.com/blog/example-8/action.png&quot; alt=&quot;feed&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;欢迎关注知乎专栏&lt;a href=&quot;https://zhuanlan.zhihu.com/defyun&quot;&gt;一个人的云计算&lt;/a&gt;&lt;/p&gt;
 </description>
